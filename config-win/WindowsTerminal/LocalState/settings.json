@@ -63,13 +63,13 @@
     {
       "command": "nextTab",
       "keys": [
-        "ctrl+pageup"
+        "ctrl+pagedown"
       ]
     },
     {
       "command": "prevTab",
       "keys": [
-        "ctrl+pagedown"
+        "ctrl+pageup"
       ]
     },
     {
