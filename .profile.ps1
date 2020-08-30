@@ -14,7 +14,7 @@ Set-Theme Agnoster
 
 $env:GIT_SSH = "C:\WINDOWS\System32\OpenSSH\ssh.exe"
 $env:FZF_DEFAULT_COMMAND = 'rg -g "" --hidden --ignore ".git"'
-$env:FZF_DEFAULT_OPTS = '--reverse --border'
+# $env:FZF_DEFAULT_OPTS = '--reverse --border'
 
 Set-PSReadLineOption -EditMode Emacs
 Set-PSReadLineOption -BellStyle None
@@ -66,20 +66,11 @@ function ghg {
   ghq get --shallow $args
 }
 
-function Invoke-HistoryFzf {
-  $cmd = Get-Content (Get-PSReadLineOption).HistorySavePath | fzf
-  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($cmd)
-  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-}
-
 # key binding
-Set-PSReadLineKeyHandler -Chord Ctrl+r -ScriptBlock {
-  Invoke-HistoryFzf
-}
 # 実行後入力待ちになるため、AcceptLine を実行する
 Set-PSReadLineKeyHandler -Chord 'Ctrl+]' -ScriptBlock { gf; [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() }
 Set-PSReadLineKeyHandler -Chord 'Ctrl+j' -ScriptBlock  { Invoke-FuzzyZLocation; [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() }
+Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
 
 $localrc = "$env:HOMEPATH/.profile.local.ps1"
 
