@@ -37,7 +37,7 @@ set refresh-mode = auto
 #set refresh-interval = 1
 
 # 差分表示に diff-highlight を使う (要 tig 2.2.1 以降. diff-highlight が $PATH にあること)
-set diff-highlight = true
+# set diff-highlight = true
 
 # カラー設定
 # diff-view で境界が見やすくなるように変更

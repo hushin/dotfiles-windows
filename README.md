@@ -10,12 +10,11 @@ iex(new-object net.webclient).downloadstring('https://raw.githubusercontent.com/
 ## Initialize
 
 ```
-code ~/.gitconfig.local
+code $env:USERPROFILE\.gitconfig.local
 ```
 
 ```
 [user]
   name = hushin
   email = nnnnot+github@gmail.com
-EOF
 ```
