@@ -74,9 +74,9 @@ scoop cache rm *
 
 # https://github.com/lukesampson/scoop/wiki/Theming-Powershell
 # back-up current console settings
-concfg export console-backup.json
+# concfg export console-backup.json
 concfg import solarized-dark
-scoop install pshazz
+# scoop install pshazz
 
 if (Test-Path ("$DOTFILES")) {
   Set-Location $DOTFILES
@@ -96,6 +96,11 @@ New-Item $PSUSERHOME\PowerShell -Force -ItemType Directory
 
 # Windows Terminal
 New-Item -Path $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState -Force -ItemType Directory
+
+# keyhac
+New-Item $PSUSERHOME\bin\keyhac -Force -ItemType Directory
+# AutoHotKey
+New-Item $PSUSERHOME\SetUp\AutoHotKey -Force -ItemType Directory
 
 # memo
 New-Item -Path $env:APPDATA\memo -Force -ItemType Directory
@@ -118,6 +123,9 @@ $NPMPACKAGES = @(
   "prettier"
 )
 npm install -g $NPMPACKAGES
+foreach ($NPMPACKAGE in $NPMPACKAGES) {
+  npm install -g $NPMPACKAGE
+}
 
 # golang
 $GOPACKAGES = @(

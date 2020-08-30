@@ -7,7 +7,7 @@ Add-MpPreference -ExclusionPath $env:USERPROFILE\.config
 Add-MpPreference -ExclusionPath $env:USERPROFILE\.dotfiles
 Add-MpPreference -ExclusionPath $env:USERPROFILE\bin
 Add-MpPreference -ExclusionPath $env:USERPROFILE\scoop
-Add-MpPreference -ExclusionPath $env:USERPROFILE\src
+Add-MpPreference -ExclusionPath $env:USERPROFILE\ghq
 Add-MpPreference -ExclusionPath $env:USERPROFILE\pkg
 Add-MpPreference -ExclusionPath "$env:USERPROFILE\Hyper-V"
 Add-MpPreference -ExclusionPath "$env:USERPROFILE\VirtualBox VMs"
@@ -81,9 +81,6 @@ New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\PowerShell\Microsoft.Po
 ## VSCode
 New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\WindowsPowerShell\Microsoft.VSCode_profile.ps1 -Value $DOTFILES\profile.ps1
 
-# editorconfig
-New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.editorconfig -Value $DOTFILES\.editorconfig
-
 # dotfiles
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.editorconfig -Value $DOTFILES\config\.editorconfig
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.gitconfig -Value $DOTFILES\config\.gitconfig
@@ -95,6 +92,11 @@ New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.npmrc -Value $DOT
 # Windows Terminal
 New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
 New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
+
+# keyhac
+New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\bin\keyhac\config.py -Value $DOTFILES\config-win\keyhac\config.py
+# AutoHotKey
+New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\SetUp\AutoHotKey\MacLikeKeybind.ahk -Value $DOTFILES\config-win\ahk\MacLikeKeybind.ahk
 
 # memo
 New-Item -Force -ItemType SymbolicLink -Path $env:APPDATA\memo\config.toml -Value $DOTFILES\config-win\memo\config.toml
