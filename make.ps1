@@ -49,19 +49,29 @@ $SCOOP_PACKAGES = @(
   "bat"
   "concfg"
   "everything"
+  "fd"
   "fzf"
+  "gawk"
   "ghq"
   "git"
   "go"
+  "gzip"
   "jq"
+  "less"
   "mpc-be"
   "nodejs-lts"
   "openssh"
   "paint.net"
   "powertoys"
+  "pshazz"
+  "pwsh"
   "ripgrep"
   "ruby"
+  "sed"
+  "sudo"
   "sysinternals"
+  "tar"
+  "uutils-coreutils"
 )
 
 scoop install git
@@ -73,10 +83,7 @@ scoop install $SCOOP_PACKAGES
 scoop cache rm *
 
 # https://github.com/lukesampson/scoop/wiki/Theming-Powershell
-# back-up current console settings
-# concfg export console-backup.json
 concfg import solarized-dark
-# scoop install pshazz
 
 if (Test-Path ("$DOTFILES")) {
   Set-Location $DOTFILES
@@ -108,6 +115,16 @@ New-Item -Path $env:APPDATA\memo -Force -ItemType Directory
 # runas
 Start-Process powershell.exe ("-NoProfile -Command cd " + $env:USERPROFILE + "\.dotfiles; .\runas.ps1") -Verb runas
 
+# PowerShell
+echo "Install posh-git"
+Install-Module posh-git -Scope CurrentUser
+echo "Install oh-my-posh"
+Install-Module oh-my-posh -Scope CurrentUser
+echo "Install  ZLocation"
+Install-Module ZLocation -Scope CurrentUser
+echo "Install PSFzf"
+Install-Module PSFzf -Scope CurrentUser
+
 # ruby
 $GEMPACKAGES = @(
   "git-browse-remote"
@@ -122,7 +139,6 @@ $NPMPACKAGES = @(
   "init-package-json-parcel"
   "prettier"
 )
-npm install -g $NPMPACKAGES
 foreach ($NPMPACKAGE in $NPMPACKAGES) {
   npm install -g $NPMPACKAGE
 }

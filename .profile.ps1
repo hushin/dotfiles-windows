@@ -6,92 +6,46 @@ if (Test-Path($ChocolateyProfile)) {
   Import-Module "$ChocolateyProfile"
 }
 
+# https://2ndlife.secon.dev/entry/2020/08/17/070735
 Import-Module posh-git
 Import-Module oh-my-posh
-Set-Theme Paradox
+Import-Module ZLocation
+Set-Theme Agnoster
 
-function Prompt {
-  $e = $?
-  $ErrorActionPreference = "Stop"
-  Write-Host "# " -ForegroundColor Blue -NoNewLine
-  Write-Host $env:USERNAME -ForegroundColor Cyan -NoNewLine
-  Write-Host " @ " -ForegroundColor White -NoNewLine
-  Write-Host $env:COMPUTERNAME -ForegroundColor Green -NoNewLine
-  Write-Host " in " -ForegroundColor White -NoNewLine
-  Write-Host ((Get-Location).Path.replace($HOME, "~")) -ForegroundColor Yellow -NoNewLine
-  $isGit = Test-Path -Path ((Get-Location).Path + "\.git")
-  if ($isGit) {
-    Write-Host " on git:" -ForegroundColor White -NoNewline
-    $result = git status
-    Write-Host (Write-Output $result | Select-String "On branch" | ForEach-Object { $_ -replace ("On branch ", "") }) -ForegroundColor cyan -NoNewline
-    if ($result[-1].Contains("working tree clean")) {
-      Write-Host " o"  -ForegroundColor Green -NoNewline
-    }
-    else {
-      Write-Host " x"  -ForegroundColor Red -NoNewline
-    }
-  }
-  Write-Host (Get-Date -UFormat " [%T]") -ForegroundColor White -NoNewLine
-  if (!($e)) {
-    Write-Host " E" -ForegroundColor Red -NoNewLine
-  }
-  Write-Host "`nPS" -ForegroundColor DarkCyan -NoNewline
-  "> "
+$env:GIT_SSH = "C:\WINDOWS\System32\OpenSSH\ssh.exe"
+$env:FZF_DEFAULT_COMMAND = 'rg -g "" --hidden --ignore ".git"'
+$env:FZF_DEFAULT_OPTS = '--reverse --border'
+
+Set-PSReadLineOption -EditMode Emacs
+Set-PSReadLineOption -BellStyle None
+# 標準だと Ctrl+d は DeleteCharOrExit のため、うっかり端末が終了することを防ぐ
+Set-PSReadLineKeyHandler -Chord 'Ctrl+d' -Function DeleteChar
+# EditMode Emacs 標準のタブ補完
+Set-PSReadLineKeyHandler -Key Tab -Function Complete
+# メニュー補完に変更
+Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
+
+
+# uutils-coreutils プロファイルに追加
+@"
+  arch, base32, base64, basename, cat, cksum, comm, cp, cut, date, df, dircolors, dirname,
+  echo, env, expand, expr, factor, false, fmt, fold, hashsum, head, hostname, join, link, ln,
+  ls, md5sum, mkdir, mktemp, more, mv, nl, nproc, od, paste, printenv, printf, ptx, pwd,
+  readlink, realpath, relpath, rm, rmdir, seq, sha1sum, sha224sum, sha256sum, sha3-224sum,
+  sha3-256sum, sha3-384sum, sha3-512sum, sha384sum, sha3sum, sha512sum, shake128sum,
+  shake256sum, shred, shuf, sleep, sort, split, sum, sync, tac, tail, tee, test, touch, tr,
+  true, truncate, tsort, unexpand, uniq, wc, whoami, yes
+"@ -split ',' |
+ForEach-Object { $_.trim() } |
+Where-Object { ! @('tee', 'sort', 'sleep').Contains($_) } |
+ForEach-Object {
+    $cmd = $_
+    if (Test-Path Alias:$cmd) { Remove-Item -Path Alias:$cmd }
+    $fn = '$input | uutils ' + $cmd + ' $args'
+    Invoke-Expression "function global:$cmd { $fn }" 
 }
 
-function Invoke-GhqFzf {
-  $selected_dir = git config --get ghq.root
-  if ($selected_dir) {
-    $target = ghq list | fzf
-    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-    [Microsoft.PowerShell.PSConsoleReadLine]::Insert("Set-Location $selected_dir\$target")
-    [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-  }
-  else {
-    Write-Output "Cannot find ghq.root"
-  }
-}
-
-Set-PSReadLineKeyHandler -Chord Ctrl+z -ScriptBlock {
-  Invoke-GhqFzf
-}
-
-function Invoke-HistoryFzf {
-  $cmd = Get-Content (Get-PSReadLineOption).HistorySavePath | fzf
-  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($cmd)
-  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-}
-
-Set-PSReadLineKeyHandler -Chord Ctrl+r -ScriptBlock {
-  Invoke-HistoryFzf
-}
-
-# for Windows 7/8
-if ([System.Environment]::OSVersion.Version.Major -le 6) {
-  if (Get-Module -ListAvailable -Name PSReadLine) {
-    Import-Module PSReadLine
-  }
-  else {
-    # https://github.com/psget/psget/issues/237
-    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-    (new-object Net.WebClient).DownloadString("http://bit.ly/GetPsGet") | Invoke-Expression
-  }
-}
-
-Set-PSReadLineKeyHandler -Chord Ctrl+d -ScriptBlock {
-  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-  [Microsoft.PowerShell.PSConsoleReadLine]::Insert('exit')
-  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-}
-
-Set-PSReadLineKeyHandler -Chord Ctrl+a BeginningOfLine
-Set-PSReadLineKeyHandler -Chord Ctrl+e EndOfLine
-Set-PSReadLineKeyHandler -Chord Ctrl+w BackwardKillWord
-Set-PSReadLineKeyHandler -Chord Alt+f NextWord
-Set-PSReadLineKeyHandler -Chord Alt+b BackwardWord
-
-Remove-Item Alias:cd -ErrorAction Ignore
+Set-Alias grep rg
 
 function cd {
   if ($args.Length -gt 0) {
@@ -102,8 +56,30 @@ function cd {
   }
 }
 
-# $env:FZF_DEFAULT_COMMAND = '--files --hidden --glob "!.git"'
-$env:FZF_DEFAULT_OPTS = '--reverse --border'
+function gf {
+  $path = ghq list | fzf
+  if ($LastExitCode -eq 0) {
+    cd "$(ghq root)\$path"
+  }
+}
+function ghg {
+  ghq get --shallow $args
+}
+
+function Invoke-HistoryFzf {
+  $cmd = Get-Content (Get-PSReadLineOption).HistorySavePath | fzf
+  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($cmd)
+  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
+
+# key binding
+Set-PSReadLineKeyHandler -Chord Ctrl+r -ScriptBlock {
+  Invoke-HistoryFzf
+}
+# 実行後入力待ちになるため、AcceptLine を実行する
+Set-PSReadLineKeyHandler -Chord 'Ctrl+]' -ScriptBlock { gf; [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() }
+Set-PSReadLineKeyHandler -Chord 'Ctrl+j' -ScriptBlock  { Invoke-FuzzyZLocation; [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() }
 
 $localrc = "$env:HOMEPATH/.profile.local.ps1"
 

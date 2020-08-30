@@ -1,6 +1,7 @@
 [core]
 	autocrlf = false
 	excludesfile = ~/.gitignore
+	symlinks = true
 [include]
 	path = ~/.gitconfig.local
 [alias]
