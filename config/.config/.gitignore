@@ -1,0 +1,13 @@
+/*
+/.*
+
+!/.gitignore
+!/git
+!/fish
+!/karabiner
+/fish/completions
+/fish/conf.d
+/fish/functions
+/fish/fishd.*
+/fish/fish_variables
+!tmux

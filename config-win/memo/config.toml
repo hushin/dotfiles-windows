@@ -1,0 +1,10 @@
+memodir = "~/Dropbox/memo/_posts/"
+memotemplate = "~/.dotfiles/config-win/memo/template.txt"
+editor = "code"
+column = 20
+selectcmd = "fzf"
+grepcmd = "rg ${PATTERN} ${DIR}"
+assetsdir = ""
+pluginsdir = "~/AppData/Roaming/memo/plugins"
+templatedirfile = ""
+templatebodyfile = ""

@@ -1,0 +1,54 @@
+[core]
+	autocrlf = false
+	excludesfile = ~/.gitignore
+[include]
+	path = ~/.gitconfig.local
+[alias]
+	# https://gist.github.com/teppeis/4117588
+	alias = !git config --list | grep 'alias\\.' | sed 's/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\\\t => \\2/' | sort
+	st = status
+	info = remote show origin
+	l  = log --graph -n 20 --pretty=format:'%C(yellow)%h%C(cyan)%d%Creset %s %C(green)- %an, %cr%Creset'
+  ln = log --graph -n 20 --pretty=format:'%C(yellow)%h%C(cyan)%d%Creset %s %C(green)- %an, %cr%Creset' --name-status
+  lc = log --graph -n 20 --pretty=format:'%C(yellow)%h%Creset %s'
+	lp = log --oneline -n 20 -p
+  ls = log --stat --abbrev-commit -n 1 # display previous log
+
+	# https://gist.github.com/azu/09dd6f27f52e2e8d9978
+	pushup = "!gitbranchname() { git symbolic-ref --short HEAD; }; gitpushupstream() { git push --set-upstream origin `gitbranchname`; }; gitpushupstream"
+	# https://qiita.com/makoto_kw/items/c825e17e2a577bb83e19
+	delete-merged-branches = !git branch --merged | grep -v \\* | xargs -I % git branch -d %
+	merged-list = !git branch -r --list --merged
+	no-merged-list = "!git branch -r --list --no-merged | grep -v '*' | xargs -Ibranch git log -1 --pretty=format:'|branch|%an|%ad|%s|%n' --date=short branch | cat"
+	# https://qiita.com/yuichielectric/items/84cd61915a1236f19221
+	rprune = remote prune origin
+	# http://motemen.hatenablog.com/entry/2014/06/05/released-git-browse-remote-0-1-0
+	br = browse-remote
+	# https://qiita.com/awakia/items/f14dc6310e469964a8f7
+  showpr = "!f() { git log --merges --oneline --reverse --ancestry-path $1...master | grep 'Merge pull request #' | head -n 1; }; f"
+  openpr = "!f() { hub browse -- `git log --merges --oneline --reverse --ancestry-path $1...master | grep 'Merge pull request #' | head -n 1 | cut -f5 -d' ' | sed -e 's%#%pull/%'`; }; f"
+
+  pushf = push --force-with-lease
+  # トピックブランチで作業中、masterの変更を取り入れたいとき
+  rmaster = !git checkout master && git pull && git checkout - && git rebase --rebase-merges master
+[color]
+	ui = auto
+[push]
+	default = simple
+[commit]
+	verbose = true
+[rebase]
+	autosquash = true
+	autostash = true
+[merge]
+	ff = false
+[pull]
+	rebase = merges
+[fetch]
+	prune = true
+[pager]
+	log = diff-highlight | less
+	show = diff-highlight | less
+	diff = diff-highlight | less
+[interactive]
+	diffFilter = diff-highlight

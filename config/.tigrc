@@ -1,0 +1,246 @@
+# https://qiita.com/sfus/items/063797a1dd8fdc7d032f
+
+# main view の左端にコミットIDを表示する
+set main-view = id date author:email-user commit-title:graph=yes,refs=yes
+
+# Pager系の行数表示をON、intervalを1に (default: line-number:no,interval=5)
+set pager-view  = line-number:yes,interval=1 text
+set stage-view  = line-number:yes,interval=1 text
+set log-view    = line-number:yes,interval=1 text
+set blob-view   = line-number:yes,interval=1 text
+set diff-view   = line-number:yes,interval=1 text:yes,commit-title-overflow=no
+
+# 画面を垂直方向に分割する
+set vertical-split = yes
+
+set line-graphics = utf-8       # グラフ描画時の種別
+set tab-size = 8                # TAB 文字の表示幅
+# 空白無視 (status-view では表示するが diff-view では無視する) (W でトグル)
+# set ignore-space = at-eol
+set split-view-width = 75%      # 垂直分割時の比率
+# 検索時に大文字小文字を無視する (default: false)
+set ignore-case = true
+
+# マージ diff を表示する
+set diff-options = -m --first-parent
+
+# マウスを有効にする
+set mouse = true
+
+# '+行数' の形で Editor に行番号を引数として渡すか
+set editor-line-number = yes
+
+# リフレッシュするタイミング
+set refresh-mode = auto
+#set refresh-mode = after-command
+#set refresh-mode = periodic
+#set refresh-interval = 1
+
+# 差分表示に diff-highlight を使う (要 tig 2.2.1 以降. diff-highlight が $PATH にあること)
+set diff-highlight = true
+
+# カラー設定
+# diff-view で境界が見やすくなるように変更
+color  diff-header       default magenta
+color  diff-chunk        black   white
+
+set wrap-lines = yes
+
+# g をファイル先頭に移動に変更、 view-grep を再割当て
+bind generic g      move-first-line
+bind generic E      view-grep
+
+# G でファイル末尾に移動 (default: :toggle commit-title-graph)
+bind generic G      move-last-line
+bind main    G      move-last-line
+
+# Alt-g で :toggle commit-title-graph
+bind main    <Esc>g :toggle commit-title-graph
+
+# n / p を上下移動に割り当て (default: find-next / view-pager)
+# bind generic n      move-down
+# bind generic p      move-up
+
+# n / p で単位ごとの移動
+bind diff    n      :/^@@
+bind diff    p      :?^@@
+bind diff    <Esc>n :/^diff --(git|cc)
+bind diff    <Esc>p :?^diff --(git|cc)
+bind stage   n      :/^@@
+bind stage   p      :?^@@
+bind stage   <Esc>n :/^diff --(git|cc)
+bind stage   <Esc>p :?^diff --(git|cc)
+bind pager   n      :/^@@
+bind pager   p      :?^@@
+bind pager   <Esc>n :/^diff --(git|cc)
+bind pager   <Esc>p :?^diff --(git|cc)
+bind log     <Ctrl-n> :/^commit
+bind log     <Ctrl-p> :?^commit
+
+# 元の n / p を別に割り当て
+bind generic V      view-pager
+bind generic <Ctrl-s> find-next # 要 stty stop undef
+bind generic <Ctrl-r> find-prev
+
+# Ctrl-f, Ctrl-b で左右スクロール
+bind generic <Ctrl-f> scroll-right
+bind generic <Ctrl-b> scroll-left
+
+# Ctrl-g でリフレッシュ
+bind generic <Ctrl-g> refresh
+
+# F で fetch (default: :toggle file-name / :toggle commit-title-refs)
+bind generic F      ?git fetch %(remote)
+bind main    F      ?git fetch %(remote)
+
+# Alt-f で :toggle file-name / :toggle commit-title-refs
+bind generic <Esc>f :toggle file-name
+bind main    <Esc>f :toggle commit-title-refs
+
+# U で　pull
+bind generic U      ?git pull %(remote)
+
+# Alt-u で該当ブランチを更新
+bind main    <Esc>u ?sh -c "git checkout %(branch) && git pull %(remote) --ff-only && git checkout -"
+bind diff    <Esc>u ?sh -c "git checkout %(branch) && git pull %(remote) --ff-only && git checkout -"
+bind refs    <Esc>u ?sh -c "git checkout %(branch) && git pull %(remote) --ff-only && git checkout -"
+
+# P で remote への push
+bind generic P      ?git push -u %(remote) %(repo:head)
+
+# C で commit (refs での C は checkout, main での C は cherry-pick だが上書きする)
+# bind generic C      !git commit
+# bind refs    C      !git commit
+# bind main    C      !git commit
+
+# Alt-c で commit --allow-empty
+bind generic <Esc>c !git commit --allow-empty
+
+# + で commit --amend
+bind generic +      !git commit --amend --allow-empty
+
+# L で reflog
+bind generic L      !sh -c "git reflog --pretty=raw | tig --pretty=raw"
+
+# _ で指定 reflog 番号にリセット
+bind generic _      ?git reset --hard HEAD@{"%(prompt Enter HEAD@{} number: )"}
+
+# ^ で reset --soft
+# bind generic ^      ?git reset --soft HEAD^
+
+# . で HEAD との diff
+bind main    .      !sh -c "git diff %(commit) | tig"
+bind diff    .      !sh -c "git diff %(commit) | tig"
+bind refs    .      !sh -c "git diff %(branch) | tig"
+
+# Alt-. で指定 commit ID との diff
+bind main    <Esc>. ?sh -c "git diff %(commit)..%(prompt Enter commit ID: ) | tig"
+bind diff    <Esc>. ?sh -c "git diff %(commit)..%(prompt Enter commit ID: ) | tig"
+bind refs    <Esc>. ?sh -c "git diff %(branch)..%(prompt Enter branch name: ) | tig"
+
+# ~ で親コミットに移動 (default: :toggle line-graphics)
+bind generic ~      :goto %(commit)^
+
+# Alt-~ で表示のトグル (default: ~)
+bind generic <Esc>~ :toggle line-graphics
+
+# S で stash save
+bind generic S      ?git stash save "%(prompt Enter stash comment: )"
+
+# Y で stash pop
+bind diff    Y      ?git stash pop %(stash)
+bind stash   Y      ?git stash pop %(stash)
+
+# Alt-y で stash apply
+bind diff    <Esc>y ?git stash apply %(stash)
+bind stash   <Esc>y ?git stash apply %(stash)
+
+# H で　reset --hard HEAD (status-view)
+bind status  H      ?git reset --hard HEAD
+
+# D でブランチを削除 (マージ済みブランチのみ. 強制削除(branch -D) は `!`) (refs-view)
+bind refs    D      ?git branch -d %(branch)
+
+# D でトラッキングされていないファイルを削除 (status-view)
+bind status  D      ?git clean -d -f -- %(file)
+
+# D で stash を削除 (`!` と同じ) (stash-view)
+bind stash   D      ?git stash drop %(stash)
+
+# D でファイルを削除 (tree-view)
+bind tree    D      ?git rm %(file)
+
+# ` で commit ID をクリップボードにコピー (Mac用)
+# https://blog.hifumi.info/2014/05/29/tigrc-2/
+bind generic `      @bash -c "cut -c-7 <<<%(commit) | xargs echo -n | clip"
+
+# ` でファイルパスをクリップボードにコピー (Mac用)
+bind stage   `      @bash -c "echo -n '%(file)' | clip"
+bind status  `      @bash -c "echo -n '%(file)' | clip"
+bind tree    `      @bash -c "echo -n '%(file)' | clip"
+bind blob    `      @bash -c "echo -n '%(file)' | clip"
+
+# 9 でコミットコメントをコピー
+bind generic 9      @bash -c "git show %(commit) --quiet | clip"
+
+# ! で revert
+bind main    !      ?git revert %(commit)
+
+# K で　cherry-pick (default: 'C')
+bind main    K      ?git cherry-pick %(commit)
+bind diff    K      ?git cherry-pick %(commit)
+
+# Alt-k で cherry-pick -n (--no-commit)
+bind main    <Esc>k ?git cherry-pick -n %(commit)
+bind diff    <Esc>k ?git cherry-pick -n %(commit)
+
+# = で checkout
+bind main    =      ?git checkout %(branch)
+bind refs    =      ?git checkout %(branch)
+bind main    <Esc>= ?git checkout %(commit)
+
+# - で直前のブランチに戻る (checkout -)
+bind generic -      ?git checkout -
+
+# M で merge
+bind main    M      ?git merge %(branch)
+bind diff    M      ?git merge %(branch)
+bind refs    M      ?git merge %(branch)
+bind main    <Esc>m ?git merge %(commit)
+bind diff    <Esc>m ?git merge %(commit)
+
+# R で rebase
+bind main    R      ?git rebase %(branch)
+bind diff    R      ?git rebase %(branch)
+bind refs    R      ?git rebase %(branch)
+bind main    <Esc>r ?git rebase %(commit)
+bind diff    <Esc>r ?git rebase %(commit)
+
+# I で rebase -i
+bind main    I      ?git rebase -i %(branch)
+bind diff    I      ?git rebase -i %(branch)
+bind refs    I      ?git rebase -i %(branch)
+bind main    <Esc>i ?git rebase -i %(commit)
+bind diff    <Esc>i ?git rebase -i %(commit)
+
+# http://hisaichi5518.hatenablog.jp/entry/2017/02/09/160007
+# B でコミットをブラウザで開く
+bind main    B @git browse-remote %(commit)
+bind blame   B @git browse-remote %(commit)
+bind refs    B @git browse-remote %(ref)
+
+# B でファイルをブラウザで開く
+bind tree    B @git browse-remote %(commit) %(file)
+bind blob    B @git browse-remote %(commit) %(file) -L %(lineno)
+bind grep    B @git browse-remote %(commit) %(file)
+
+# w で Pull Request を開く
+bind main    w @git openpr %(commit)
+bind blame   w @git openpr %(commit)
+bind refs    w @git openpr %(ref)
+
+# Alt-b でブランチを作成してそのブランチに移動 (checkout -b)
+bind main    <Esc>b ?git checkout -b "%(prompt Enter branch name: )" %(branch)
+
+# A で git add -A
+bind status A @git add -A
