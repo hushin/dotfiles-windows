@@ -109,6 +109,14 @@ New-Item $PSUSERHOME\bin\keyhac -Force -ItemType Directory
 # AutoHotKey
 New-Item $PSUSERHOME\SetUp\AutoHotKey -Force -ItemType Directory
 
+# keyhac Shortcut
+$WsShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WsShell.CreateShortcut("$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\keyhac.lnk")
+$Shortcut.TargetPath = "$PSUSERHOME\bin\keyhac\keyhac.exe"
+$Shortcut.IconLocation = "$PSUSERHOME\bin\keyhac\keyhac.exe"
+$Shortcut.WindowStyle = 7 #最小化
+$Shortcut.Save()
+
 # memo
 New-Item -Path $env:APPDATA\memo -Force -ItemType Directory
 
@@ -123,7 +131,7 @@ echo "Install posh-git"
 Install-Module posh-git -Scope CurrentUser
 echo "Install oh-my-posh"
 Install-Module oh-my-posh -Scope CurrentUser
-echo "Install  ZLocation"
+echo "Install ZLocation"
 Install-Module ZLocation -Scope CurrentUser
 echo "Install PSFzf"
 Install-Module PSFzf -Scope CurrentUser
