@@ -71,15 +71,15 @@ foreach ($disableFeature in $disableFeatures) {
 }
 
 # profile
-New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.profile.ps1 -Value $DOTFILES\.profile.ps1
+New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.profile.ps1 -Value $DOTFILES\config-win\.profile.ps1
 
 ## Windows Powershell
-New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\WindowsPowerShell\Microsoft.PowerShell_profile.ps1 -Value $DOTFILES\profile.ps1
+New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\WindowsPowerShell\Microsoft.PowerShell_profile.ps1 -Value $DOTFILES\config-win\profile.ps1
 ## Powershell Core
-New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\PowerShell\Microsoft.PowerShell_profile.ps1 -Value $DOTFILES\profile.ps1
+New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\PowerShell\Microsoft.PowerShell_profile.ps1 -Value $DOTFILES\config-win\profile.ps1
 
 ## VSCode
-New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\WindowsPowerShell\Microsoft.VSCode_profile.ps1 -Value $DOTFILES\profile.ps1
+New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\WindowsPowerShell\Microsoft.VSCode_profile.ps1 -Value $DOTFILES\config-win\profile.ps1
 
 # dotfiles
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.editorconfig -Value $DOTFILES\config\.editorconfig
