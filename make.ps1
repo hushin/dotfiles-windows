@@ -112,6 +112,9 @@ New-Item $PSUSERHOME\SetUp\AutoHotKey -Force -ItemType Directory
 # memo
 New-Item -Path $env:APPDATA\memo -Force -ItemType Directory
 
+# ssh
+New-Item -Path $env:USERPROFILE\.ssh -Force -ItemType Directory
+
 # runas
 Start-Process powershell.exe ("-NoProfile -Command cd " + $env:USERPROFILE + "\.dotfiles; .\runas.ps1") -Verb runas
 

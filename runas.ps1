@@ -97,9 +97,13 @@ New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsof
 # keyhac
 New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\bin\keyhac\config.py -Value $DOTFILES\config-win\keyhac\config.py
 # AutoHotKey
-New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\SetUp\AutoHotKey\MacLikeKeybind.ahk -Value $DOTFILES\config-win\ahk\MacLikeKeybind.ahk
+New-Item -Force -ItemType SymbolicLink -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\MacLikeKeybind.ahk" -Value $DOTFILES\config-win\ahk\MacLikeKeybind.ahk
 
 # memo
 New-Item -Force -ItemType SymbolicLink -Path $env:APPDATA\memo\config.toml -Value $DOTFILES\config-win\memo\config.toml
+
+# ssh
+New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.ssh\id_rsa -Value $env:USERPROFILE\Dropbox\env\ssh\id_rsa
+New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.ssh\id_rsa.pub -Value $env:USERPROFILE\Dropbox\env\ssh\id_rsa.pub
 
 Start-Sleep -Seconds 5
