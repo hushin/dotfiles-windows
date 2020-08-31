@@ -20,3 +20,7 @@ code $env:USERPROFILE\.gitconfig.local
   name = hushin
   email = nnnnot+github@gmail.com
 ```
+
+## 他、手動でやること
+
+[Mac使いがWindows開発環境構築してみたログ - Qiita](https://qiita.com/hush_in/items/1ac22f4c4c07c7df7900)
