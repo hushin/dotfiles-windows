@@ -5,6 +5,7 @@
   "showTerminalTitleInTitlebar": true,
   "defaultProfile": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
   "copyOnSelect": true,
+  "copyFormatting": false,
   "initialCols": 132,
   "initialRows": 32,
   "initialPosition": "1920,1060",
@@ -72,10 +73,10 @@
       "command": "newTab",
       "keys": ["ctrl+shift+n"]
     },
-    {
-      "command": "closeTab",
-      "keys": ["ctrl+shift+w"]
-    },
+    // {
+    //   "command": "closeTab",
+    //   "keys": ["ctrl+shift+w"]
+    // },
     {
       "command": "nextTab",
       "keys": ["ctrl+pagedown"]
@@ -105,7 +106,11 @@
         "split": "auto",
         "splitMode": "duplicate"
       },
-      "keys": "ctrl+|"
+      "keys": "ctrl+shift+d"
+    },
+    {
+      "command": "closePane",
+      "keys": ["ctrl+shift+w"]
     },
     {
       "command": {

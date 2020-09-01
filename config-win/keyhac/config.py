@@ -118,7 +118,7 @@ def configure(keymap):
     setLWKey("Plus")
     setLWKey("Minus")
     setLWKey("Comma")
-    
+
     # Tabs
     setLWKey("1")
     setLWKey("2")
@@ -143,7 +143,7 @@ def configure(keymap):
     keymap_global[ "C-Left"   ] = "C-W-Left"
     keymap_global[ "U0-Right" ] = "C-Right"
     keymap_global[ "U0-Left"  ] = "C-Left"
-    
+
     # VSCode
     keymap_vscode = keymap.defineWindowKeymap( exe_name="code.exe")
     # VSCode + US配列キーボードの組み合わせだと動作しないものがあるので、別のショートカットを追加して割当
@@ -158,6 +158,7 @@ def configure(keymap):
     keymap_wt[ "U0-N" ] = "C-S-N"
     keymap_wt[ "U0-W" ] = "C-S-W"
     keymap_wt[ "U0-F" ] = "C-S-F"
+    keymap_wt[ "U0-D" ] = "C-S-D"
 
     # Clipboard history related
     keymap_global[ "U0-S-V"   ] = keymap.command_ClipboardList     # Open the clipboard history list
