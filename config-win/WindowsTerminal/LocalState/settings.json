@@ -4,6 +4,7 @@
   "showTabsInTitlebar": true,
   "showTerminalTitleInTitlebar": true,
   "defaultProfile": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
+  "copyOnSelect": true,
   "initialCols": 132,
   "initialRows": 32,
   "initialPosition": "1920,1060",
@@ -69,27 +70,19 @@
   "keybindings": [
     {
       "command": "newTab",
-      "keys": [
-        "ctrl+shift+n"
-      ]
+      "keys": ["ctrl+shift+n"]
     },
     {
       "command": "closeTab",
-      "keys": [
-        "ctrl+shift+w"
-      ]
+      "keys": ["ctrl+shift+w"]
     },
     {
       "command": "nextTab",
-      "keys": [
-        "ctrl+pagedown"
-      ]
+      "keys": ["ctrl+pagedown"]
     },
     {
       "command": "prevTab",
-      "keys": [
-        "ctrl+pageup"
-      ]
+      "keys": ["ctrl+pageup"]
     },
     {
       "command": {
@@ -119,63 +112,49 @@
         "action": "switchToTab",
         "index": 0
       },
-      "keys": [
-        "ctrl+1"
-      ]
+      "keys": ["ctrl+1"]
     },
     {
       "command": {
         "action": "switchToTab",
         "index": 1
       },
-      "keys": [
-        "ctrl+2"
-      ]
+      "keys": ["ctrl+2"]
     },
     {
       "command": {
         "action": "switchToTab",
         "index": 2
       },
-      "keys": [
-        "ctrl+3"
-      ]
+      "keys": ["ctrl+3"]
     },
     {
       "command": {
         "action": "switchToTab",
         "index": 3
       },
-      "keys": [
-        "ctrl+4"
-      ]
+      "keys": ["ctrl+4"]
     },
     {
       "command": {
         "action": "switchToTab",
         "index": 4
       },
-      "keys": [
-        "ctrl+5"
-      ]
+      "keys": ["ctrl+5"]
     },
     {
       "command": {
         "action": "switchToTab",
         "index": 5
       },
-      "keys": [
-        "ctrl+6"
-      ]
+      "keys": ["ctrl+6"]
     },
     {
       "command": {
         "action": "switchToTab",
         "index": 6
       },
-      "keys": [
-        "ctrl+7"
-      ]
+      "keys": ["ctrl+7"]
     }
   ]
 }
