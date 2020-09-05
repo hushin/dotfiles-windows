@@ -1,6 +1,8 @@
 ﻿#SingleInstance force
 #InstallKeybdHook
 #UseHook
+DetectHiddenWindows, on
+SetWinDelay, 0
 SendMode Input
 
 ;Shift  +
@@ -33,3 +35,17 @@ RShift & F10::
   Send,{Volume_Mute}
   SoundPlay,*64
   return
+
+F13 & `;::
+  terminal := WinExist("ahk_exe WindowsTerminal.exe")
+  if (terminal)
+  {
+    active := WinActive("ahk_id " terminal)
+    if (active)
+      WinMinimize, ahk_id %active%
+    else
+      WinActivate, ahk_id %terminal%
+  }
+  else
+    Run, wt.exe
+Return
