@@ -83,7 +83,7 @@ scoop install $SCOOP_PACKAGES
 scoop cache rm *
 
 # https://github.com/lukesampson/scoop/wiki/Theming-Powershell
-concfg import solarized-dark
+concfg import dracula
 
 if (Test-Path ("$DOTFILES")) {
   Set-Location $DOTFILES
