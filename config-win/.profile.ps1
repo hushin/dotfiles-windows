@@ -42,7 +42,7 @@ ForEach-Object {
     $cmd = $_
     if (Test-Path Alias:$cmd) { Remove-Item -Path Alias:$cmd }
     $fn = '$input | uutils ' + $cmd + ' $args'
-    Invoke-Expression "function global:$cmd { $fn }" 
+    Invoke-Expression "function global:$cmd { $fn }"
 }
 
 Set-Alias grep rg
@@ -64,6 +64,30 @@ function gf {
 }
 function ghg {
   ghq get --shallow $args
+}
+
+function mkdev {
+  if ($args.Length -ne 1) {
+		echo "Usage: mkdev dir-name"
+    return
+  }
+  $dirName = $args[0]
+  $devPath = "$(ghq root)\github.com\$(git config user.name)\$dirName"
+  mkdir -p $devPath
+  cd $devPath
+  git init
+}
+
+function mksandbox {
+  if ($args.Length -ne 1) {
+		echo "Usage: mksandbox dir-name"
+    return
+  }
+  $dirName = $args[0]
+  $devPath = "$(ghq root)\github.com\$(git config user.name)-sandbox\$dirName"
+  mkdir -p $devPath
+  cd $devPath
+  git init
 }
 
 # key binding
