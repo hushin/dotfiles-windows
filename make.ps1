@@ -30,6 +30,7 @@ $CHOCO_PACKAGES = @(
   # "qttabbar"
   "cica"
   "cascadiacodepl"
+  "font-hackgen-nerd"
   "steam"
 )
 

@@ -11,7 +11,7 @@
   "initialPosition": "1920,1060",
   "profiles": {
     "defaults": {
-      "fontFace": "Cascadia Code PL",
+      "fontFace": "HackGenNerd Console",
       "fontSize": 12,
       "colorScheme": "One Half Dark"
     },
