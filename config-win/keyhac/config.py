@@ -21,6 +21,7 @@ def configure(keymap):
 
     not_emacs_target = [
         "bash.exe",
+        "emacs.exe",
         "ubuntu2004.exe",
         "WindowsTerminal.exe",
     ]
