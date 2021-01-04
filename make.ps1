@@ -57,6 +57,7 @@ $SCOOP_PACKAGES = @(
   "git"
   "go"
   "gzip"
+  "hub"
   "jq"
   "less"
   "mpc-be"

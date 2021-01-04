@@ -90,6 +90,15 @@ function mksandbox {
   git init
 }
 
+function crrepo {
+  # TODO cd-gitroot したい
+  $pwd = $(pwd)
+  $dirName = $pwd -replace '\\', '/'
+  $dirName -match '[^/]*?/[^/]*?$' > $null
+  $repoName = $Matches[0]
+  hub create $args $repoName
+}
+
 # key binding
 # 実行後入力待ちになるため、AcceptLine を実行する
 Set-PSReadLineKeyHandler -Chord 'Ctrl+]' -ScriptBlock { gf; [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() }
