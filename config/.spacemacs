@@ -38,18 +38,21 @@ This function should only modify configuration layer settings."
      ;; Uncomment some layer names and press `SPC f e R' (Vim style) or
      ;; `M-m f e R' (Emacs style) to install them.
      ;; ----------------------------------------------------------------
-     ;; auto-completion
-     ;; better-defaults
+     auto-completion
+     better-defaults
      emacs-lisp
-     ;; git
+     git
      helm
-     ;; lsp
-     ;; markdown
+     lsp
+     markdown
      multiple-cursors
-     ;; org
-     ;; (shell :variables
-     ;;        shell-default-height 30
-     ;;        shell-default-position 'bottom)
+      (org :variables
+        org-enable-github-support t
+        org-enable-bootstrap-support t
+        org-enable-org-journal-support t)
+     (shell :variables
+            shell-default-height 30
+            shell-default-position 'bottom)
      ;; spell-checking
      ;; syntax-checking
      ;; version-control
@@ -64,7 +67,7 @@ This function should only modify configuration layer settings."
    ;; `dotspacemacs/user-config'. To use a local version of a package, use the
    ;; `:location' property: '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-   dotspacemacs-additional-packages '()
+    dotspacemacs-additional-packages '(doom-themes)
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -161,7 +164,7 @@ It should only modify the values of Spacemacs settings."
    ;; with `:variables' keyword (similar to layers). Check the editing styles
    ;; section of the documentation for details on available variables.
    ;; (default 'vim)
-   dotspacemacs-editing-style 'vim
+   dotspacemacs-editing-style 'hybrid
 
    ;; If non-nil show the version string in the Spacemacs buffer. It will
    ;; appear as (spacemacs version)@(emacs version)
@@ -215,7 +218,9 @@ It should only modify the values of Spacemacs settings."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press `SPC T n' to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(spacemacs-dark
+    dotspacemacs-themes '(
+                           doom-one
+                           spacemacs-dark
                          spacemacs-light)
 
    ;; Set the theme for the Spaceline. Supported themes are `spacemacs',
@@ -234,8 +239,8 @@ It should only modify the values of Spacemacs settings."
    ;; Default font or prioritized list of fonts. The `:size' can be specified as
    ;; a non-negative integer (pixel size), or a floating-point (point size).
    ;; Point size is recommended, because it's device independent. (default 10.0)
-   dotspacemacs-default-font '("Source Code Pro"
-                               :size 10.0
+   dotspacemacs-default-font '("Cica"
+                               :size 15.0
                                :weight normal
                                :width normal)
 
@@ -411,7 +416,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; If non-nil, start an Emacs server if one is not already running.
    ;; (default nil)
-   dotspacemacs-enable-server nil
+   dotspacemacs-enable-server t
 
    ;; Set the emacs server socket location.
    ;; If nil, uses whatever the Emacs default is, otherwise a directory path
@@ -515,7 +520,98 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+
+
+  (require 'org-tempo)
+  (require 'org-protocol)
+  (define-key global-map "\C-h" 'delete-backward-char)
+
+  (setq system-time-locale "C")
+  (set-language-environment "Japanese")
+
+  ;; C-c C-j が org-goto と被っていたので回避
+  (global-set-key "\C-cj" 'org-journal-new-entry)
+  ;; Org stuff
+  (with-eval-after-load 'org
+    (setq org-directory "~/Dropbox/memo/org"
+      org-archive-directory (concat org-directory "/archive")
+      org-archive-location (concat org-archive-directory "/%s_archive::")
+      org-default-notes-file (concat org-directory "/note.org")
+      org-agenda-files (list org-directory)
+      org-refile-targets '((org-agenda-files :maxlevel . 3)))
+
+    (setq org-todo-keywords
+      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+               (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)"))))
+
+    (add-to-list 'org-modules 'org-protocol)
+
+    (setq org-capture-templates
+      '(
+	       ("t" "Task" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
+	         "* TODO %? \nCREATED: %U\n %i")
+	       ("T" "Task from protocol" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
+           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n")
+	       ("L" "ReadItLater" entry (file+headline "~/Dropbox/memo/org/gtd.org" "ReadItLater")
+           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n")
+	       ("i" "Idea" entry (file+headline "~/Dropbox/memo/org/idea.org" "Idea")
+	         "* %? %U %i")
+	       ("r" "Remember" entry (file+headline "~/Dropbox/memo/org/remember.org" "Remember")
+	         "* %? %U %i")
+	       ("m" "Memo" entry (file+headline org-default-notes-file "Memo")
+	         "* %? %U %i")
+	       ("M" "Memo from protocol" entry (file+headline org-default-notes-file "Memo")
+           "* %? [[%:link][%:description]] \nCaptured On: %U\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n")
+         ("R" "Review entry" entry (file+datetree "~/Dropbox/memo/org/review.org") (file "~/Dropbox/memo/org/template-review.org"))
+         ))
+
+    (add-hook 'org-capture-mode-hook 'evil-insert-state)
+    (add-hook 'org-journal-after-entry-create-hook 'evil-insert-state)
+
+    (setq org-startup-truncated nil)
+    ;; 行の折り返しの設定
+    (add-hook 'visual-line-mode-hook
+      '(lambda()
+         (setq word-wrap nil)))
+
+    ;; journal
+    (setq org-journal-dir "~/Dropbox/memo/org/journal/")
+    (setq org-journal-file-format "%Y-%m-%d")
+    (setq org-journal-date-format "%Y-%m-%d %A")
+    ;; (setq org-journal-time-format "%R ")
+    (setq org-journal-file-type 'weekly)
+    (setq org-journal-find-file 'find-file)
+    (setq org-extend-today-until '3)
+
+    (defun org-journal-file-header-func (time)
+      "Custom function to create journal header."
+      (concat
+        (pcase org-journal-file-type
+          (`weekly "#+TITLE: Weekly Journal\n#+STARTUP: content indent inlineimages"))))
+    (setq org-journal-file-header 'org-journal-file-header-func)
+    )
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(evil-want-Y-yank-to-eol nil)
+  '(package-selected-packages
+     '(ox-gfm ox-twbs org-journal yasnippet-snippets xterm-color ws-butler writeroom-mode winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package unfill undo-tree treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired treemacs-evil toc-org terminal-here symon symbol-overlay string-inflection spaceline-all-the-icons smeargle shell-pop restart-emacs rainbow-delimiters popwin pcre2el password-generator paradox overseer orgit org-superstar org-rich-yank org-projectile org-present org-pomodoro org-mime org-download org-cliplink org-brain open-junk-file nameless mwim multi-term move-text mmm-mode markdown-toc magit-svn magit-section magit-gitflow macrostep lsp-ui lsp-treemacs lsp-origami lorem-ipsum link-hint indent-guide hybrid-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-org helm-mode-manager helm-make helm-lsp helm-ls-git helm-gitignore helm-git-grep helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-templates gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy font-lock+ flycheck-pos-tip flycheck-package flycheck-elsa flx-ido fancy-battery eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-easymotion evil-cleverparens evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emr elisp-slime-nav editorconfig dumb-jump dotenv-mode dired-quick-sort diminish devdocs define-word column-enforce-mode clean-aindent-mode centered-cursor-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent ace-link ace-jump-helm-line ac-ispell)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+)
