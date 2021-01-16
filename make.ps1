@@ -2,6 +2,7 @@
 # Set-ExecutionPolicy -Scope Process Unrestricted
 
 $DOTFILES = "$env:USERPROFILE\.dotfiles"
+$EMACSD= "$env:USERPROFILE\.emacs.d"
 
 # Chocolatey
 try {
@@ -49,6 +50,7 @@ $SCOOP_PACKAGES = @(
   "7zip"
   "bat"
   "concfg"
+  "emacs"
   "everything"
   "fd"
   "fzf"
@@ -66,6 +68,7 @@ $SCOOP_PACKAGES = @(
   "paint.net"
   "powertoys"
   "pshazz"
+  "pt"
   "pwsh"
   "ripgrep"
   "ruby"
@@ -93,8 +96,18 @@ if (Test-Path ("$DOTFILES")) {
 }
 else {
   git config --global core.autoCRLF false
-  git clone https://github.com/hushin/dotfiles-windows $env:USERPROFILE\.dotfiles
+  git clone https://github.com/hushin/dotfiles-windows $DOTFILES
 }
+
+# spacemacs
+if (Test-Path ("$EMACSD")) {
+  Set-Location $EMACSD
+  git pull
+}
+else {
+  git clone https://github.com/syl20bnr/spacemacs $EMACSD
+}
+[System.Environment]::SetEnvironmentVariable("HOME", "$env:USERPROFILE", "User")
 
 # profile
 $PSUSERHOME = $profile -replace "^(.*)\\.*$", "`$1" -replace "^(.*)\\.*$", "`$1"
