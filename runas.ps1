@@ -89,6 +89,7 @@ New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.tigrc -Value $DOT
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.prettierrc -Value $DOTFILES\config\.prettierrc
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.npmrc -Value $DOTFILES\config\.npmrc
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.curlrc -Value $DOTFILES\config\.curlrc
+New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.spacemacs -Value $DOTFILES\config\.spacemacs
 
 # Windows Terminal
 New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
