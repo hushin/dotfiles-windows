@@ -67,7 +67,10 @@ This function should only modify configuration layer settings."
    ;; `dotspacemacs/user-config'. To use a local version of a package, use the
    ;; `:location' property: '(your-package :location "~/path/to/your-package/")
    ;; Also include the dependencies as they will not be resolved automatically.
-    dotspacemacs-additional-packages '(doom-themes)
+    dotspacemacs-additional-packages '(
+                                        doom-themes
+                                        auto-save-buffers-enhanced
+                                        )
 
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -521,6 +524,11 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
+  (require 'auto-save-buffers-enhanced)
+  (setq auto-save-buffers-enhanced-interval 1)
+  (setq auto-save-buffers-enhanced-quiet-save-p t)
+  (auto-save-buffers-enhanced t)
+
   (require 'org-tempo)
   (require 'org-protocol)
   (require 'org-checklist)
@@ -530,7 +538,7 @@ before packages are loaded."
   (set-language-environment "Japanese")
 
   ;; C-c C-j が org-goto と被っていたので上書き
-  (global-set-key "\C-cC-j" 'org-journal-new-entry)
+  (global-set-key "\C-c\C-j" 'org-journal-new-entry)
   ;; Org stuff
   (with-eval-after-load 'org
     (setq org-directory "~/Dropbox/memo/org"
