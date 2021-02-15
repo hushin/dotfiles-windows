@@ -521,9 +521,9 @@ configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
-
   (require 'org-tempo)
   (require 'org-protocol)
+  (require 'org-checklist)
   (define-key global-map "\C-h" 'delete-backward-char)
 
   (setq system-time-locale "C")
@@ -541,19 +541,21 @@ before packages are loaded."
       org-refile-targets '((org-agenda-files :maxlevel . 3)))
 
     (setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+      (quote ((sequence "TODO(t)" "|" "DONE(d)")
                (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)"))))
 
     (add-to-list 'org-modules 'org-protocol)
+
+    (setq org-superstar-headline-bullets-list '("◉" "○" "●" "✿"))
 
     (setq org-capture-templates
       '(
 	       ("t" "Task" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
 	         "* TODO %? \nCREATED: %U\n %i")
 	       ("T" "Task from protocol" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
-           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n")
+           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n%i\n\n")
 	       ("L" "ReadItLater" entry (file+headline "~/Dropbox/memo/org/gtd.org" "ReadItLater")
-           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n")
+           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n%i\n")
 	       ("i" "Idea" entry (file+headline "~/Dropbox/memo/org/idea.org" "Idea")
 	         "* %? %U %i")
 	       ("r" "Remember" entry (file+headline "~/Dropbox/memo/org/remember.org" "Remember")
@@ -561,7 +563,7 @@ before packages are loaded."
 	       ("m" "Memo" entry (file+headline org-default-notes-file "Memo")
 	         "* %? %U %i")
 	       ("M" "Memo from protocol" entry (file+headline org-default-notes-file "Memo")
-           "* %? [[%:link][%:description]] \nCaptured On: %U\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n")
+           "* %? [[%:link][%:description]] \nCaptured On: %U\n%i\n")
          ("R" "Review entry" entry (file+datetree "~/Dropbox/memo/org/review.org") (file "~/Dropbox/memo/org/template-review.org"))
          ))
 
@@ -606,7 +608,7 @@ This function is called at the very end of Spacemacs initialization."
  ;; If there is more than one, they won't work right.
  '(evil-want-Y-yank-to-eol nil)
   '(package-selected-packages
-     '(ox-gfm ox-twbs org-journal yasnippet-snippets xterm-color ws-butler writeroom-mode winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package unfill undo-tree treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired treemacs-evil toc-org terminal-here symon symbol-overlay string-inflection spaceline-all-the-icons smeargle shell-pop restart-emacs rainbow-delimiters popwin pcre2el password-generator paradox overseer orgit org-superstar org-rich-yank org-projectile org-present org-pomodoro org-mime org-download org-cliplink org-brain open-junk-file nameless mwim multi-term move-text mmm-mode markdown-toc magit-svn magit-section magit-gitflow macrostep lsp-ui lsp-treemacs lsp-origami lorem-ipsum link-hint indent-guide hybrid-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-org helm-mode-manager helm-make helm-lsp helm-ls-git helm-gitignore helm-git-grep helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-templates gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy font-lock+ flycheck-pos-tip flycheck-package flycheck-elsa flx-ido fancy-battery eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-easymotion evil-cleverparens evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emr elisp-slime-nav editorconfig dumb-jump dotenv-mode dired-quick-sort diminish devdocs define-word column-enforce-mode clean-aindent-mode centered-cursor-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent ace-link ace-jump-helm-line ac-ispell)))
+     '(auto-save-buffers-enhanced ox-gfm ox-twbs org-journal yasnippet-snippets xterm-color ws-butler writeroom-mode winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package unfill undo-tree treemacs-projectile treemacs-persp treemacs-magit treemacs-icons-dired treemacs-evil toc-org terminal-here symon symbol-overlay string-inflection spaceline-all-the-icons smeargle shell-pop restart-emacs rainbow-delimiters popwin pcre2el password-generator paradox overseer orgit org-superstar org-rich-yank org-projectile org-present org-pomodoro org-mime org-download org-cliplink org-brain open-junk-file nameless mwim multi-term move-text mmm-mode markdown-toc magit-svn magit-section magit-gitflow macrostep lsp-ui lsp-treemacs lsp-origami lorem-ipsum link-hint indent-guide hybrid-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-xref helm-themes helm-swoop helm-purpose helm-projectile helm-org-rifle helm-org helm-mode-manager helm-make helm-lsp helm-ls-git helm-gitignore helm-git-grep helm-flx helm-descbinds helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot gitignore-templates gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gh-md fuzzy font-lock+ flycheck-pos-tip flycheck-package flycheck-elsa flx-ido fancy-battery eyebrowse expand-region evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-textobj-line evil-surround evil-org evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-lion evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-easymotion evil-cleverparens evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emr elisp-slime-nav editorconfig dumb-jump dotenv-mode dired-quick-sort diminish devdocs define-word column-enforce-mode clean-aindent-mode centered-cursor-mode auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent ace-link ace-jump-helm-line ac-ispell)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
