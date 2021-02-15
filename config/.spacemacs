@@ -529,8 +529,8 @@ before packages are loaded."
   (setq system-time-locale "C")
   (set-language-environment "Japanese")
 
-  ;; C-c C-j が org-goto と被っていたので回避
-  (global-set-key "\C-cj" 'org-journal-new-entry)
+  ;; C-c C-j が org-goto と被っていたので上書き
+  (global-set-key "\C-cC-j" 'org-journal-new-entry)
   ;; Org stuff
   (with-eval-after-load 'org
     (setq org-directory "~/Dropbox/memo/org"
