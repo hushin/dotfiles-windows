@@ -525,7 +525,7 @@ Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
   (require 'auto-save-buffers-enhanced)
-  (setq auto-save-buffers-enhanced-interval 1)
+  (setq auto-save-buffers-enhanced-interval 3)
   (setq auto-save-buffers-enhanced-quiet-save-p t)
   (auto-save-buffers-enhanced t)
 
@@ -537,8 +537,8 @@ before packages are loaded."
   (setq system-time-locale "C")
   (set-language-environment "Japanese")
 
-  ;; C-c C-j が org-goto と被っていたので上書き
-  (global-set-key "\C-c\C-j" 'org-journal-new-entry)
+  ;; C-c C-j が org-goto と被っていたので回避
+  (global-set-key "\C-cj" 'org-journal-new-entry)
   ;; Org stuff
   (with-eval-after-load 'org
     (setq org-directory "~/Dropbox/memo/org"
@@ -550,7 +550,7 @@ before packages are loaded."
 
     (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "|" "DONE(d)")
-               (sequence "WAITING(w@/!)" "|" "CANCELLED(c@/!)"))))
+               (sequence "WAITING(w/!)" "|" "CANCELLED(c/!)"))))
 
     (add-to-list 'org-modules 'org-protocol)
 
@@ -599,6 +599,54 @@ before packages are loaded."
         (pcase org-journal-file-type
           (`weekly "#+TITLE: Weekly Journal\n#+STARTUP: content indent inlineimages"))))
     (setq org-journal-file-header 'org-journal-file-header-func)
+
+    ;; org-agenda
+    ;; ウィークリー/デイリーアジェンダ(C-c a a)の初期表示をデイリーにする
+    (setq org-agenda-span 'day)
+    ;; 時間表示が1桁の時、0をつける
+    (setq org-agenda-time-leading-zero t)
+    ;; fullscreen
+    (defadvice org-agenda (around org-agenda-fullscreen activate)
+      (window-configuration-to-register :org-agenda-fullscreen)
+      ad-do-it
+      (delete-other-windows))
+
+    (defadvice org-agenda-quit (around org-agenda-quit-fullscreen activate)
+      ad-do-it
+      (jump-to-register :org-agenda-fullscreen))
+
+    ;; d で DONE
+    (defun my/org-agenda-todo-done ()
+      (interactive)
+      (org-agenda-todo 'done))
+    (add-hook 'org-agenda-mode-hook
+      (lambda ()
+        (local-set-key (kbd "d") 'my/org-agenda-todo-done)))
+
+    (setq org-agenda-time-grid
+      '((daily today require-timed)
+         (0900 1200 1300 1800) "......" "----------------"))
+    (setq org-agenda-custom-commands
+      '(
+         ("n" "Agenda and all TODO's"
+           (;; 2週間の予定
+             (agenda "" ((org-agenda-span 7)
+                          (org-agenda-show-log nil)
+                          (org-agenda-clockreport-mode nil)))
+             ;; 今日の予定・行動記録
+             (agenda "" ((org-agenda-span 1)
+                          (org-agenda-show-log 'clockcheck)
+                          (org-agenda-clockreport-mode t)))
+             (alltodo "")))
+         ("x" "Unscheduled Tasks" tags-todo
+           "-SCHEDULED>=\"<today>\"-DEADLINE>=\"<today>\"" nil)
+         ("c" ""
+           tags-todo "SCHEDULED=\"<+0d>\""
+           ((org-agenda-overriding-header "TaskChute TODO")
+             (org-agenda-overriding-columns-format "%50ITEM(Task) %10Effort(Effort){:}")
+             (org-agenda-view-columns-initially t)))
+         )
+      )
     )
   )
 
