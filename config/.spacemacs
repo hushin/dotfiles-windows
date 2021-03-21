@@ -545,7 +545,12 @@ before packages are loaded."
       org-archive-directory (concat org-directory "/archive")
       org-archive-location (concat org-archive-directory "/%s_archive::")
       org-default-notes-file (concat org-directory "/note.org")
-      org-agenda-files (list org-directory)
+      org-agenda-files (list
+                         (concat org-directory "/gtd.org")
+                         (concat org-directory "/mobile.org")
+                         (concat org-directory "/note.org")
+                         (concat org-directory "/someday.org")
+                         )
       org-refile-targets '((org-agenda-files :maxlevel . 3)))
 
     (setq org-todo-keywords
