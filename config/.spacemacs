@@ -551,7 +551,7 @@ before packages are loaded."
                          (concat org-directory "/note.org")
                          (concat org-directory "/someday.org")
                          )
-      org-refile-targets '((org-agenda-files :maxlevel . 3)))
+      org-refile-targets '((org-agenda-files :maxlevel . 1)))
 
     (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "|" "DONE(d)")
