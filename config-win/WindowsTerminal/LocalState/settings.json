@@ -6,12 +6,12 @@
   "defaultProfile": "{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}",
   "copyOnSelect": true,
   "copyFormatting": false,
-  "initialCols": 132,
-  "initialRows": 32,
-  "initialPosition": "1920,1060",
+  "initialCols": 120,
+  "initialRows": 34,
+  "initialPosition": "2080,1060",
   "profiles": {
     "defaults": {
-      "fontFace": "HackGenNerd Console",
+      "fontFace": "HackGen35Nerd Console",
       "fontSize": 12,
       "colorScheme": "One Half Dark"
     },
