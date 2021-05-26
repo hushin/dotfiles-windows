@@ -537,6 +537,12 @@ before packages are loaded."
   (setq system-time-locale "C")
   (set-language-environment "Japanese")
 
+  ;; rgrep 文字化け対策
+  (setenv "LANG" "ja_JP.UTF-8")
+  (prefer-coding-system 'utf-8-unix)
+  (set-file-name-coding-system 'cp932)
+  (setq locale-coding-system 'utf-8-unix)
+
   ;; C-c C-j が org-goto と被っていたので回避
   (global-set-key "\C-cj" 'org-journal-new-entry)
   ;; Org stuff
@@ -551,7 +557,7 @@ before packages are loaded."
                          (concat org-directory "/note.org")
                          (concat org-directory "/someday.org")
                          )
-      org-refile-targets '((org-agenda-files :maxlevel . 1)))
+      org-refile-targets '((org-agenda-files :maxlevel . 3)))
 
     (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "|" "DONE(d)")
