@@ -10,7 +10,7 @@ if (Test-Path($ChocolateyProfile)) {
 Import-Module posh-git
 Import-Module oh-my-posh
 Import-Module ZLocation
-Set-Theme Agnoster
+Set-PoshPrompt -Theme agnoster
 
 $env:GIT_SSH = "C:\WINDOWS\System32\OpenSSH\ssh.exe"
 $env:FZF_DEFAULT_COMMAND = 'rg -g "" --hidden --ignore ".git"'
