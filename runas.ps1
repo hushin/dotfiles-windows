@@ -100,6 +100,13 @@ New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\bin\keyhac\config.py -V
 # AutoHotKey
 New-Item -Force -ItemType SymbolicLink -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\MacLikeKeybind.ahk" -Value $DOTFILES\config-win\ahk\MacLikeKeybind.ahk
 
+# org-protocol
+New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+New-Item 'HKCR:\org-protocol\shell\open\command' -Force
+Set-ItemProperty -Path 'HKCR:\org-protocol' -name '(default)' -Value 'URL:Org Protocol'
+Set-ItemProperty -Path 'HKCR:\org-protocol' -name 'URL Protocol' -Value ''
+Set-ItemProperty -Path 'HKCR:\org-protocol\shell\open\command' -name '(default)' -Value "`"$env:USERPROFILE\scoop\apps\emacs\current\bin\emacsclientw.exe`" `"%1`""
+
 # memo
 New-Item -Force -ItemType SymbolicLink -Path $env:APPDATA\memo\config.toml -Value $DOTFILES\config-win\memo\config.toml
 
