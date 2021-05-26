@@ -19,8 +19,10 @@ $CHOCO_PACKAGES = @(
   "1password"
   "vagrant"
   "virtualbox"
+  "docker-desktop"
   "discord"
   "line"
+  "zoom"
   "windirstat"
   "autohotkey"
   "adobereader"
@@ -65,7 +67,7 @@ $SCOOP_PACKAGES = @(
   "mpc-be"
   "nodejs-lts"
   "openssh"
-  "paint.net"
+  # "paint.net"
   "powertoys"
   "pshazz"
   "pt"
@@ -77,6 +79,7 @@ $SCOOP_PACKAGES = @(
   "sysinternals"
   "tar"
   "uutils-coreutils"
+  "windows-terminal"
 )
 
 scoop install git

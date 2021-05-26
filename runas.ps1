@@ -94,6 +94,7 @@ New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.spacemacs -Value 
 # Windows Terminal
 New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
 New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
+New-Item -Force -ItemType SymbolicLink -Path "$env:LOCALAPPDATA\Microsoft\Windows Terminal\settings.json" -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
 
 # keyhac
 New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\bin\keyhac\config.py -Value $DOTFILES\config-win\keyhac\config.py
