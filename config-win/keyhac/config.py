@@ -19,6 +19,10 @@ def configure(keymap):
     def ime_off():
         keymap.wnd.setImeStatus( 0 )
 
+    def esc_and_ime_off():
+        keymap.InputKeyCommand('Esc')()
+        ime_off()
+
     not_emacs_target = [
         "bash.exe",
         "emacs.exe",
@@ -64,7 +68,6 @@ def configure(keymap):
     keymap_emacs[ "C-(191)" ] = "C-Z"      # Undo
     keymap_emacs[ "C-K" ] = "S-End","C-X"  # Removing following text
     keymap_emacs[ "C-J" ] = "Enter"
-    keymap_emacs[ "C-OpenBracket" ] = "Esc"
 
     # Win キー(ChangeKey でF13に割り当て済み)を Mac のCmdのように割当
     keymap.defineModifier( 124, "User0" )
@@ -77,6 +80,13 @@ def configure(keymap):
     # 他のキーと押した時は、元のキー扱い
     keymap_global[ "O-(124)" ] = ime_off
     keymap_global[ "O-RWin" ] = ime_on
+
+    def is_in_emacs_target(window):
+        return window.getProcessName() == 'emacs.exe'
+    keymap_in_emacs = keymap.defineWindowKeymap(check_func=is_in_emacs_target)
+
+    keymap_emacs[ "C-OpenBracket" ] = esc_and_ime_off
+    keymap_in_emacs[ "C-OpenBracket" ] = esc_and_ime_off
 
     # LWin as Command
     def setLWKey(key, modifiers=["C", "S-C", "A-C"]):
