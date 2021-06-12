@@ -667,8 +667,16 @@ before packages are loaded."
     (setq org-roam-db-location "~/.emacs.d/org-roam.db")
     (setq org-roam-directory "~/Dropbox/memo/org/roam")
     (setq org-roam-index-file "~/Dropbox/memo/org/roam/Index.org")
+
+    (bind-key "C-c n l" 'org-roam)
+    (bind-key "C-c n t" 'org-roam-today)
+    (bind-key "C-c n f" 'org-roam-find-file)
+    (bind-key "C-c n g" 'org-roam-graph-show)
+    (bind-key "C-c n i" 'org-roam-insert)
+    (bind-keys :map org-roam-mode-map
+      ("C-i" . org-roam-insert))
     )
-  )
+ )
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
