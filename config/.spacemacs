@@ -541,10 +541,27 @@ before packages are loaded."
   (set-language-environment "Japanese")
 
   ;; rgrep 文字化け対策
+  (require 'cl-lib)
   (setenv "LANG" "ja_JP.UTF-8")
   (prefer-coding-system 'utf-8-unix)
   (set-file-name-coding-system 'cp932)
   (setq locale-coding-system 'utf-8-unix)
+  ;; プロセスが出力する文字コードを判定して、process-coding-system の DECODING の設定値を決定する
+  (setq default-process-coding-system '(undecided-dos . utf-8-unix))
+  ;; サブプロセスに渡すパラメータの文字コードを cp932 にする
+  (cl-loop for (func args-pos) in '((call-process 4)
+                                      (call-process-region 6)
+                                      (start-process 3))
+    do (eval `(advice-add ',func
+                :around (lambda (orig-fun &rest args)
+                          (setf (nthcdr ,args-pos args)
+                            (mapcar (lambda (arg)
+                                      (if (multibyte-string-p arg)
+                                        (encode-coding-string arg 'cp932)
+                                        arg))
+                              (nthcdr ,args-pos args)))
+                          (apply orig-fun args))
+                '((depth . 99)))))
 
   ;; C-c C-j が org-goto と被っていたので回避
   (global-set-key "\C-cj" 'org-journal-new-entry)
@@ -669,7 +686,7 @@ before packages are loaded."
     (setq org-roam-index-file "~/Dropbox/memo/org/roam/Index.org")
 
     (bind-key "C-c n l" 'org-roam)
-    (bind-key "C-c n t" 'org-roam-today)
+    (bind-key "C-c n t" 'org-roam-dailies-find-today)
     (bind-key "C-c n f" 'org-roam-find-file)
     (bind-key "C-c n g" 'org-roam-graph-show)
     (bind-key "C-c n i" 'org-roam-insert)
