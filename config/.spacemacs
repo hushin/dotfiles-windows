@@ -590,11 +590,11 @@ before packages are loaded."
     (setq org-capture-templates
       '(
 	       ("t" "Task" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
-	         "* TODO %? \nCREATED: %U\n %i")
+	         "* TODO %? \n  CREATED: %U\n %i")
 	       ("T" "Task from protocol" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
-           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n%i\n\n")
+           "* TODO %? [[%:link][%:description]] \n  CREATED: %U\n%i\n\n")
 	       ("L" "ReadItLater" entry (file+headline "~/Dropbox/memo/org/gtd.org" "ReadItLater")
-           "* TODO %? [[%:link][%:description]] \nCREATED: %U\n%i\n")
+           "* TODO %? [[%:link][%:description]] \n  CREATED: %U\n%i\n")
 	       ("i" "Idea" entry (file+headline "~/Dropbox/memo/org/idea.org" "Idea")
 	         "* %? %U %i")
 	       ("r" "Remember" entry (file+headline "~/Dropbox/memo/org/remember.org" "Remember")
@@ -602,7 +602,7 @@ before packages are loaded."
 	       ("m" "Memo" entry (file+headline org-default-notes-file "Memo")
 	         "* %? %U %i")
 	       ("M" "Memo from protocol" entry (file+headline org-default-notes-file "Memo")
-           "* %? [[%:link][%:description]] \nCaptured On: %U\n%i\n")
+           "* %? [[%:link][%:description]] \n  Captured On: %U\n%i\n")
          ("R" "Review entry" entry (file+datetree "~/Dropbox/memo/org/review.org") (file "~/Dropbox/memo/org/template-review.org"))
          ))
 
