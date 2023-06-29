@@ -17,7 +17,7 @@
 ;; accept. For example:
 ;;
 (setq doom-font (font-spec :family "Cica" :size 30)
-      doom-unicode-font (font-spec :family "Cica" :size 30))
+      doom-unicode-font (font-spec :family "Cica"))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -31,7 +31,7 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type nil)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
