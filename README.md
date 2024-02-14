@@ -16,11 +16,13 @@ code $env:USERPROFILE\.gitconfig.local
 ```
 
 ```
+[core]
+	sshCommand = C:/Windows/System32/OpenSSH/ssh.exe
 [user]
   name = hushin
-  email = nnnnot+github@gmail.com
+  email = ngtv.hsn@gmail.com
 ```
 
 ## 他、手動でやること
 
-[Mac使いがWindows開発環境構築してみたログ - Qiita](https://qiita.com/hush_in/items/1ac22f4c4c07c7df7900)
+[Mac 使いが Windows 開発環境構築してみたログ - Qiita](https://qiita.com/hush_in/items/1ac22f4c4c07c7df7900)

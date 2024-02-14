@@ -1,4 +1,4 @@
-﻿#SingleInstance force
+#SingleInstance force
 #InstallKeybdHook
 #UseHook
 DetectHiddenWindows, on

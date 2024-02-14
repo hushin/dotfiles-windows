@@ -13,28 +13,28 @@ catch [System.Management.Automation.CommandNotFoundException] {
 }
 
 $CHOCO_PACKAGES = @(
-  "dropbox"
-  "googlechrome"
-  "vscode"
-  "1password"
-  "vagrant"
-  "virtualbox"
-  "docker-desktop"
-  "discord"
-  "line"
-  "zoom"
-  "windirstat"
-  "autohotkey"
-  "adobereader"
-  "rapidee"
-  "vlc"
-  "licecap"
+  # "dropbox"
+  # "googlechrome"
+  # "vscode"
+  # "1password"
+  # "vagrant"
+  # "virtualbox"
+  # "docker-desktop"
+  # "discord"
+  # "line"
+  # "zoom"
+  # "windirstat"
+  # "autohotkey"
+  # "adobereader"
+  # "rapidee"
+  # "vlc"
+  # "licecap"
   "synologydrive"
   # "qttabbar"
   "cica"
   "cascadiacodepl"
   "font-hackgen-nerd"
-  "steam"
+  # "steam"
 )
 
 choco update
@@ -65,11 +65,11 @@ $SCOOP_PACKAGES = @(
   "jq"
   "less"
   "mpc-be"
-  "nodejs-lts"
+  # "nodejs-lts"
   "openssh"
   # "paint.net"
-  "powertoys"
-  "pshazz"
+  # "powertoys"
+  # "pshazz"
   "pt"
   "pwsh"
   "ripgrep"
@@ -93,6 +93,8 @@ scoop cache rm *
 # https://github.com/lukesampson/scoop/wiki/Theming-Powershell
 concfg import dracula
 
+winget install JanDeDobbeleer.OhMyPosh -s winget
+
 if (Test-Path ("$DOTFILES")) {
   Set-Location $DOTFILES
   git pull
@@ -102,14 +104,15 @@ else {
   git clone https://github.com/hushin/dotfiles-windows $DOTFILES
 }
 
-# spacemacs
-if (Test-Path ("$EMACSD")) {
-  Set-Location $EMACSD
-  git pull
-}
-else {
-  git clone https://github.com/syl20bnr/spacemacs $EMACSD
-}
+# # spacemacs
+# if (Test-Path ("$EMACSD")) {
+#   Set-Location $EMACSD
+#   git pull
+# }
+# else {
+#   cd $env:USERPROFILE
+#   git clone --depth 1 https://github.com/doomemacs/doomemacs .config/emacs
+# }
 [System.Environment]::SetEnvironmentVariable("HOME", "$env:USERPROFILE", "User")
 
 # profile
@@ -147,39 +150,39 @@ Start-Process powershell.exe ("-NoProfile -Command cd " + $env:USERPROFILE + "\.
 # PowerShell
 echo "Install posh-git"
 Install-Module posh-git -Scope CurrentUser
-echo "Install oh-my-posh"
-Install-Module oh-my-posh -Scope CurrentUser
+# echo "Install oh-my-posh"
+# Install-Module oh-my-posh -Scope CurrentUser
 echo "Install ZLocation"
 Install-Module ZLocation -Scope CurrentUser
 echo "Install PSFzf"
 Install-Module PSFzf -Scope CurrentUser
 
 # ruby
-$GEMPACKAGES = @(
-  "git-browse-remote"
-)
-gem install $GEMPACKAGES
+# $GEMPACKAGES = @(
+#   "git-browse-remote"
+# )
+# gem install $GEMPACKAGES
 
 # nodejs
-$NPMPACKAGES = @(
-  "npm-check-updates"
-  "http-server"
-  "npm"
-  "init-package-json-parcel"
-  "prettier"
-)
-foreach ($NPMPACKAGE in $NPMPACKAGES) {
-  npm install -g $NPMPACKAGE
-}
+# $NPMPACKAGES = @(
+#   "npm-check-updates"
+#   "http-server"
+#   "npm"
+#   "init-package-json-parcel"
+#   "prettier"
+# )
+# foreach ($NPMPACKAGE in $NPMPACKAGES) {
+#   npm install -g $NPMPACKAGE
+# }
 
 # golang
-$GOPACKAGES = @(
-  "github.com/mattn/memo"
-)
-Set-Location $env:USERPROFILE
-foreach ($GOPACKAGE in $GOPACKAGES) {
-  go get -u $GOPACKAGE
-}
+# $GOPACKAGES = @(
+#   "github.com/mattn/memo"
+# )
+# Set-Location $env:USERPROFILE
+# foreach ($GOPACKAGE in $GOPACKAGES) {
+#   go get -u $GOPACKAGE
+# }
 
 # gitconfig for windows
 if (!(Test-Path -Path $env:USERPROFILE\.gitconfig.local)) {

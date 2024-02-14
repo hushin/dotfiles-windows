@@ -1,4 +1,4 @@
-﻿# keyhac config file
+# keyhac config file
 # https://crftwr.github.io/keyhac/doc/ja/index.html
 import sys
 import os

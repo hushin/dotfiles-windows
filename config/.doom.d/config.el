@@ -17,7 +17,7 @@
 ;; accept. For example:
 ;;
 (setq doom-font (font-spec :family "Cica" :size 30)
-      doom-unicode-font (font-spec :family "Cica"))
+  )
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -100,7 +100,7 @@
 (use-package! super-save
   :config
   (setq super-save-auto-save-when-idle t
-        super-save-idle-duration 2)
+        super-save-idle-duration 1)
   (super-save-mode +1)
   )
 
@@ -109,11 +109,32 @@
 
 ;; org-mode の日付を英語にする
 (setq system-time-locale "C")
+;; (if IS-WINDOWS
+;;   (set-selection-coding-system 'utf-16le-dos)
+;;   (set-selection-coding-system 'utf-8))
+;; UTF-8をデフォルトのエンコーディングとして設定
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+;; Windows 用のクリップボード設定
+(when (eq system-type 'windows-nt)
+  (set-selection-coding-system 'utf-16le-dos))
+
+;; search-project で 日本語で検索できるようにする
+(when (eq system-type 'windows-nt)
+  (defun advice:with-japanese-coding-system (orig-fun &rest args)
+    (let ((coding-system-for-write 'cp932))
+      (apply orig-fun args)))
+
+  (advice-add '+default/search-project :around 'advice:with-japanese-coding-system))
+
 
 (after! org
   (map!
     "C-c a" #'org-agenda
     "C-c c" #'org-capture
+    "C-c j" #'org-journal-new-entry
     )
   (setq org-todo-keywords
     (quote ((sequence "TODO(t)" "|" "DONE(d)")
@@ -132,6 +153,14 @@
          "* %? [[%:link][%:description]] \nCaptured On: %U\n%i\n")
        ("R" "Review entry" entry (file+datetree "~/Dropbox/memo/org/review.org") (file "~/Dropbox/memo/org/template-review.org"))
        ))
+  ;; journal
+  (setq org-journal-file-format "%Y-%m-%d")
+  (setq org-journal-date-format "%Y-%m-%d %A")
+  ;; (setq org-journal-time-format "%R ")
+  (setq org-journal-file-type 'weekly)
+  (setq org-journal-find-file 'find-file)
+  (setq org-extend-today-until '3)
+  (add-hook 'org-journal-after-entry-create-hook 'evil-insert-state)
   )
 (after! evil-org
   (remove-hook 'org-tab-first-hook #'+org-cycle-only-current-subtree-h)
@@ -141,7 +170,6 @@
     "C-c n l" #'org-roam-buffer-toggle
     "C-c n f" #'org-roam-node-find
     "C-c n i" #'org-roam-node-insert
-    "C-c j" #'org-roam-dailies-capture-today
     "C-c n d" #'org-roam-dailies-goto-today
     :map org-mode-map
     "C-M-i" #'completion-at-point
@@ -149,8 +177,8 @@
   (setq org-roam-capture-templates
     '(
        ("d" "default" plain
-         "%?"
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n"))
+         "%? "
+         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}"))
        ("l" "programming language" plain
          "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
          :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n"))
@@ -173,52 +201,3 @@
       :ni "C-<return>" #'org-insert-heading-respect-content
       :ni "C-S-<return>" #'org-insert-todo-heading-respect-content
       )
-(defun get-basename-from-fullpath (fullpath)
-  "フルパスから最後のスラッシュまで削除した部分を返します。"
-  (let ((parts (split-string fullpath "/")))
-    (car (last parts))))
-
-(defun my-org-screenshot-win ()
-  "Take a screenshot into a time stamped unique-named file in the
-   same directory as the org-buffer and insert a link to this file."
-  (interactive)
-  (setq filename
-        (concat (expand-file-name "~/Dropbox/memo/org/img/")
-                (get-basename-from-fullpath
-                 (concat
-                  (make-temp-name
-                   (concat (buffer-file-name)
-                           "_"
-                           (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))))
-  (shell-command "snippingtool /clip")
-  (shell-command (concat "powershell -command \"Add-Type -AssemblyName System.Windows.Forms;if ($([System.Windows.Forms.Clipboard]::ContainsImage())) {$image = [System.Windows.Forms.Clipboard]::GetImage();[System.Drawing.Bitmap]$image.Save('" filename "',[System.Drawing.Imaging.ImageFormat]::Png); Write-Output 'clipboard content saved as file'} else {Write-Output 'clipboard does not contain image data'}\""))
-  (setq pastepath
-        (concat "~/Dropbox/memo/org/img/" (get-basename-from-fullpath filename)))
-  (insert (concat "[[" pastepath "]]"))
-  (org-display-inline-images))
-
-(defun my-org-screenshot-darwin ()
-  "Save a clipboard's screenshot into a time stamped unique-named file
-   in a specified directory and insert a link to this file."
-  (interactive)
-  (setq filename
-        (concat
-         (make-temp-name
-          (concat (buffer-name)
-                  "_"
-                  (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
-  (call-process "pngpaste" nil nil nil (concat (expand-file-name "~/Dropbox/memo/org/img/") filename))
-  (setq pastepath
-        (concat "~/Dropbox/memo/org/img/" filename))
-  (insert (concat "[[" pastepath "]]"))
-  (org-display-inline-images))
-
-(defun my-org-screenshot ()
-  (interactive)
-  (if (eq system-type 'darwin)
-      (my-org-screenshot-darwin)
-    (my-org-screenshot-win)
-    )
-  )
-
-(global-set-key (kbd "C-^") 'my-org-screenshot)

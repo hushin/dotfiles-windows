@@ -1,4 +1,4 @@
-try { $null = gcm pshazz -ea stop; pshazz init } catch { }
+# try { $null = gcm pshazz -ea stop; pshazz init } catch { }
 
 # Chocolatey profile
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
@@ -8,9 +8,8 @@ if (Test-Path($ChocolateyProfile)) {
 
 # https://2ndlife.secon.dev/entry/2020/08/17/070735
 Import-Module posh-git
-Import-Module oh-my-posh
+oh-my-posh init pwsh | Invoke-Expression
 Import-Module ZLocation
-Set-PoshPrompt -Theme agnoster
 
 $env:GIT_SSH = "C:\WINDOWS\System32\OpenSSH\ssh.exe"
 $env:FZF_DEFAULT_COMMAND = 'rg -g "" --hidden --ignore ".git"'

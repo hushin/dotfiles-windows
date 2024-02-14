@@ -11,7 +11,7 @@ Add-MpPreference -ExclusionPath $env:USERPROFILE\ghq
 Add-MpPreference -ExclusionPath $env:USERPROFILE\pkg
 Add-MpPreference -ExclusionPath "$env:USERPROFILE\Hyper-V"
 Add-MpPreference -ExclusionPath "$env:USERPROFILE\VirtualBox VMs"
-Add-MpPreference -ExclusionPath $env:LOCALAPPDATA\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState
+# Add-MpPreference -ExclusionPath $env:LOCALAPPDATA\Packages\CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc\LocalState
 Add-MpPreference -ExclusionPath $env:ProgramData\scoop
 Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1
 
@@ -89,7 +89,7 @@ New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.tigrc -Value $DOT
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.prettierrc -Value $DOTFILES\config\.prettierrc
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.npmrc -Value $DOTFILES\config\.npmrc
 New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.curlrc -Value $DOTFILES\config\.curlrc
-New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.spacemacs -Value $DOTFILES\config\.spacemacs
+New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.config\doom -Value $DOTFILES\config\.doom.d
 
 # Windows Terminal
 New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
@@ -97,9 +97,9 @@ New-Item -Force -ItemType SymbolicLink -Path $env:LOCALAPPDATA\Packages\Microsof
 New-Item -Force -ItemType SymbolicLink -Path "$env:LOCALAPPDATA\Microsoft\Windows Terminal\settings.json" -Value $DOTFILES\config-win\WindowsTerminal\LocalState\settings.json
 
 # keyhac
-New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\bin\keyhac\config.py -Value $DOTFILES\config-win\keyhac\config.py
+# New-Item -Force -ItemType SymbolicLink -Path $PSUSERHOME\bin\keyhac\config.py -Value $DOTFILES\config-win\keyhac\config.py
 # AutoHotKey
-New-Item -Force -ItemType SymbolicLink -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\MacLikeKeybind.ahk" -Value $DOTFILES\config-win\ahk\MacLikeKeybind.ahk
+# New-Item -Force -ItemType SymbolicLink -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\MacLikeKeybind.ahk" -Value $DOTFILES\config-win\ahk\MacLikeKeybind.ahk
 
 # org-protocol
 New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
@@ -109,10 +109,10 @@ Set-ItemProperty -Path 'HKCR:\org-protocol' -name 'URL Protocol' -Value ''
 Set-ItemProperty -Path 'HKCR:\org-protocol\shell\open\command' -name '(default)' -Value "`"$env:USERPROFILE\scoop\apps\emacs\current\bin\emacsclientw.exe`" `"%1`""
 
 # memo
-New-Item -Force -ItemType SymbolicLink -Path $env:APPDATA\memo\config.toml -Value $DOTFILES\config-win\memo\config.toml
+# New-Item -Force -ItemType SymbolicLink -Path $env:APPDATA\memo\config.toml -Value $DOTFILES\config-win\memo\config.toml
 
 # ssh
-New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.ssh\id_rsa -Value $env:USERPROFILE\Dropbox\env\ssh\id_rsa
-New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.ssh\id_rsa.pub -Value $env:USERPROFILE\Dropbox\env\ssh\id_rsa.pub
+# New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.ssh\id_rsa -Value $env:USERPROFILE\Dropbox\env\ssh\id_rsa
+# New-Item -Force -ItemType SymbolicLink -Path $env:USERPROFILE\.ssh\id_rsa.pub -Value $env:USERPROFILE\Dropbox\env\ssh\id_rsa.pub
 
 Start-Sleep -Seconds 5
