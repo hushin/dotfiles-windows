@@ -3,6 +3,18 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
+;; OS判定
+(defun macp ()
+  (eq system-type 'darwin))
+(defun linuxp ()
+  (eq system-type 'gnu/linux))
+(defun bsdp ()
+  (eq system-type 'gnu/kfreebsd))
+(defun winp ()
+  (eq system-type 'windows-nt))
+(defun wslp ()
+  (and (eq system-type 'gnu/linux)
+       (file-exists-p "/proc/sys/fs/binfmt_misc/WSLInterop")))
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -16,8 +28,8 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq doom-font (font-spec :family "Cica" :size 30)
-  )
+
+(setq doom-font (font-spec :family "Cica" :size (if (winp) 30 18)))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -36,7 +48,7 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/Dropbox/memo/org/")
-(setq org-roam-directory "~/Dropbox/memo/org/roam")
+(setq org-roam-directory (concat org-directory "roam/"))
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -71,21 +83,9 @@
 ;; they are implemented.
 
 
-;; OS判定
-(defun macp ()
-  (eq system-type 'darwin))
-(defun linuxp ()
-  (eq system-type 'gnu/linux))
-(defun bsdp ()
-  (eq system-type 'gnu/kfreebsd))
-(defun winp ()
-  (eq system-type 'windows-nt))
-(defun wslp ()
-  (and (eq system-type 'gnu/linux)
-       (file-exists-p "/proc/sys/fs/binfmt_misc/WSLInterop")))
 
 ;; Ctrl-h
-(map! "C-h" 'delete-backward-char)
+;(map! "C-h" 'delete-backward-char)
 
 ;; delete character without yanking
 (map! :n "x" 'delete-char)
@@ -109,24 +109,19 @@
 
 ;; org-mode の日付を英語にする
 (setq system-time-locale "C")
-;; (if IS-WINDOWS
-;;   (set-selection-coding-system 'utf-16le-dos)
-;;   (set-selection-coding-system 'utf-8))
 ;; UTF-8をデフォルトのエンコーディングとして設定
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 ;; Windows 用のクリップボード設定
-(when (eq system-type 'windows-nt)
+(when (winp)
   (set-selection-coding-system 'utf-16le-dos))
-
-;; search-project で 日本語で検索できるようにする
-(when (eq system-type 'windows-nt)
+;; Windows search-project で 日本語で検索できるようにする
+(when (winp)
   (defun advice:with-japanese-coding-system (orig-fun &rest args)
     (let ((coding-system-for-write 'cp932))
       (apply orig-fun args)))
-
   (advice-add '+default/search-project :around 'advice:with-japanese-coding-system))
 
 
@@ -139,6 +134,7 @@
   (setq org-todo-keywords
     (quote ((sequence "TODO(t)" "|" "DONE(d)")
              (sequence "WAITING(w/!)" "|" "CANCELLED(c/!)"))))
+  (setq org-log-done 'time)
   (setq org-capture-templates
     '(
        ("t" "Task" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
@@ -161,6 +157,15 @@
   (setq org-journal-find-file 'find-file)
   (setq org-extend-today-until '3)
   (add-hook 'org-journal-after-entry-create-hook 'evil-insert-state)
+
+  (setq org-startup-with-inline-images t)
+
+  ;; export周りの設定
+  (setq org-export-with-toc nil)
+  (setq org-export-with-section-numbers nil)
+  (setq org-export-with-creator nil)
+  (setq org-use-sub-superscripts nil)
+  (setq org-export-with-sub-superscripts nil)
   )
 (after! evil-org
   (remove-hook 'org-tab-first-hook #'+org-cycle-only-current-subtree-h)
@@ -178,15 +183,19 @@
     '(
        ("d" "default" plain
          "%? "
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}"))
+         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+         :unnarrowed t)
        ("l" "programming language" plain
          "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n"))
+         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+         :unnarrowed t)
        ("b" "book notes" plain
          "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n"))
+         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+         :unnarrowed t)
        ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project"))
+         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
+         :unnarrowed t)
        )
     )
   (setq org-roam-dailies-capture-templates
@@ -197,7 +206,9 @@
   )
 
 (map! :after evil-org
-      :map evil-org-mode-map
-      :ni "C-<return>" #'org-insert-heading-respect-content
-      :ni "C-S-<return>" #'org-insert-todo-heading-respect-content
-      )
+  :map evil-org-mode-map
+  :ni "C-<return>" #'org-insert-heading-respect-content
+  :ni "C-S-<return>" #'org-insert-todo-heading-respect-content
+  :ni "M-<left>" #'org-metaleft
+  :ni "M-<right>" #'org-metaright
+  )
