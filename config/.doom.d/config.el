@@ -29,7 +29,8 @@
 ;; accept. For example:
 ;;
 
-(setq doom-font (font-spec :family "Cica" :size (if (winp) 30 18)))
+(setq doom-font (font-spec :family "Cica" :size (if (winp) 30 18))
+  doom-variable-pitch-font (font-spec :family "Cica"))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -159,6 +160,10 @@
   (add-hook 'org-journal-after-entry-create-hook 'evil-insert-state)
 
   (setq org-startup-with-inline-images t)
+
+  (when (winp)
+    (setq org-download-screenshot-method "magick convert clipboard: %s")
+    )
 
   ;; export周りの設定
   (setq org-export-with-toc nil)
