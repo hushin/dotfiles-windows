@@ -14,7 +14,7 @@
   (eq system-type 'windows-nt))
 (defun wslp ()
   (and (eq system-type 'gnu/linux)
-       (file-exists-p "/proc/sys/fs/binfmt_misc/WSLInterop")))
+    (file-exists-p "/proc/sys/fs/binfmt_misc/WSLInterop")))
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -49,7 +49,7 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/Dropbox/memo/org/")
-(setq org-roam-directory (concat org-directory "roam/"))
+(setq org-roam-directory org-directory)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -86,7 +86,7 @@
 
 
 ;; Ctrl-h
-;(map! "C-h" 'delete-backward-char)
+                                        ;(map! "C-h" 'delete-backward-char)
 
 ;; delete character without yanking
 (map! :n "x" 'delete-char)
@@ -101,7 +101,7 @@
 (use-package! super-save
   :config
   (setq super-save-auto-save-when-idle t
-        super-save-idle-duration 1)
+    super-save-idle-duration 1)
   (super-save-mode +1)
   )
 
@@ -125,6 +125,54 @@
       (apply orig-fun args)))
   (advice-add '+default/search-project :around 'advice:with-japanese-coding-system))
 
+;; Displaying week numbers in calendar
+(copy-face font-lock-constant-face 'calendar-iso-week-face)
+(set-face-attribute 'calendar-iso-week-face nil
+  :height 0.8)
+(setq calendar-intermonth-text
+  '(propertize
+     (format "w%2d"
+       (car
+         (calendar-iso-from-absolute
+           (calendar-absolute-from-gregorian
+             (list month (- day (1- calendar-week-start-day)) year)))))
+     'font-lock-face 'calendar-iso-week-face))
+
+;; ファイル移動
+(defun move-buffer-file-to-directory ()
+  "Move the current buffer file to a new directory, keeping the same file name."
+  (interactive)
+  (let* ((old-location (buffer-file-name))
+         (file-name (file-name-nondirectory old-location))
+         (new-dir (file-name-as-directory (expand-file-name (read-directory-name "Move to directory: ")))))
+    (when (file-exists-p (concat new-dir file-name))
+      (error "File '%s' already exists in directory '%s'!" file-name new-dir))
+    (rename-file old-location (concat new-dir file-name) 1)
+    (set-visited-file-name (concat new-dir file-name))
+    (set-buffer-modified-p nil)
+    (when (fboundp 'recentf-add-file)
+      (recentf-add-file (concat new-dir file-name))
+      (recentf-remove-if-non-kept old-location))
+    (message "File moved from '%s' to '%s'" old-location (concat new-dir file-name))))
+;; ファイル削除
+(defun delete-file-and-buffer ()
+  "Kill the current buffer and deletes the file it is visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (when filename
+      (if (vc-backend filename)
+        (vc-delete-file filename)
+        (progn
+          (delete-file filename)
+          (message "Deleted file %s" filename)
+          (kill-buffer))))))
+
+(map! :leader
+  (:prefix "f"
+    :desc "Move buffer file to directory" "m" #'move-buffer-file-to-directory)
+  (:prefix "f"
+    :desc "Delete file" "D" #'delete-file-and-buffer)
+  )
 
 (after! org
   (map!
@@ -136,19 +184,185 @@
     (quote ((sequence "TODO(t)" "|" "DONE(d)")
              (sequence "WAITING(w/!)" "|" "CANCELLED(c/!)"))))
   (setq org-log-done 'time)
+  (defun my/property-values-function (property)
+    "Return allowed values for PROPERTY."
+    (cond
+      ((string= property "Type")
+        '("Book" "Web" "Anime" "Game" "Podcast" "Video" "Movie"))
+      ((string= property "Rating")
+        '("★★★★★" "★★★★" "★★★" "★★" "★"))
+      ((string= property "Canceled")
+        '("true" ""))
+      ))
+
+  (setq org-property-allowed-value-functions
+    '(my/property-values-function))
+  (defun cmp-date-property-stamp (prop)
+    "Compare two `org-mode' agenda entries, `A' and `B', by some date property.
+If a is before b, return -1. If a is after b, return 1. If they
+are equal return nil."
+    ;; source: https://emacs.stackexchange.com/questions/26351/custom-sorting-for-agenda/26369#26369
+    (lambda (a b)
+      (let* ((a-pos (get-text-property 0 'org-marker a))
+              (b-pos (get-text-property 0 'org-marker b))
+              (a-date (or (org-entry-get a-pos prop)
+                        (format "<%s>" (org-read-date t nil "now"))))
+              (b-date (or (org-entry-get b-pos prop)
+                        (format "<%s>" (org-read-date t nil "now"))))
+              (cmp (compare-strings a-date nil nil b-date nil nil)))
+        (if (eq cmp t) nil (cl-signum cmp)))))
+  
+  (setq org-agenda-files
+    (append
+      (directory-files org-directory t "\\.org$")
+      (directory-files-recursively (concat org-roam-directory "areas") "\\.org$")
+      (directory-files-recursively (concat org-roam-directory "projects") "\\.org$")
+      (directory-files-recursively (concat org-roam-directory "resources") "\\.org$")))
+
+  ;; org-roam で作ったファイルの category 表示をいい感じにする
+  ;; refs. https://d12frosted.io/posts/2020-06-24-task-management-with-roam-vol2.html
+  (setq org-agenda-prefix-format
+      '((agenda . " %i %(vulpea-agenda-category 18)%?-18t% s")
+        (todo . " %i %(vulpea-agenda-category 18) ")
+        (tags . " %i %(vulpea-agenda-category 18) ")
+        (search . " %i %(vulpea-agenda-category 18) ")))
+  (defun vulpea-agenda-category (&optional len)
+    "Get category of item at point for agenda.
+
+Category is defined by one of the following items:
+
+- CATEGORY property
+- TITLE keyword
+- TITLE property
+- filename without directory and extension
+
+When LEN is a number, resulting string is padded right with
+spaces and then truncated with ... on the right if result is
+longer than LEN.
+
+Usage example:
+
+  (setq org-agenda-prefix-format
+        '((agenda . \" %(vulpea-agenda-category) %?-12t %12s\")))
+
+Refer to `org-agenda-prefix-format' for more information."
+    (let* ((file-name (when buffer-file-name
+                        (file-name-sans-extension
+                          (file-name-nondirectory buffer-file-name))))
+            (title (vulpea-buffer-prop-get "title"))
+            (category (org-get-category))
+            (result
+              (or (if (and
+                        title
+                        (string-equal category file-name))
+                    title
+                    category)
+                "")))
+      (if (numberp len)
+        (let* ((truncated (truncate-string-to-width result (- len 3) 0 ?\s "..."))
+                (width (string-width truncated))
+                (padded (concat truncated (make-string (- len width) ?\s))))
+          padded)
+        result)))
+  (defun vulpea-buffer-prop-get (name)
+    "Get a buffer property called NAME as a string."
+    (org-with-point-at 1
+      (when (re-search-forward (concat "^#\\+" name ": \\(.*\\)")
+              (point-max) t)
+        (buffer-substring-no-properties
+          (match-beginning 1)
+          (match-end 1)))))
+  
+  (setq
+    ;; org-agenda-skip-scheduled-if-done t
+    ;; org-agenda-skip-deadline-if-done t
+    ;; org-agenda-include-deadlines t
+    ;; org-agenda-block-separator nil
+    ;; org-agenda-compact-blocks t
+    ;; org-agenda-start-with-log-mode t
+    org-agenda-start-day nil)
+  (setq org-agenda-custom-commands
+    '(
+       ("r" "Resonance Cal" tags "Type={.}"
+         ((org-agenda-files
+            (directory-files-recursively
+              (concat org-roam-directory "resources/rez") "\\.org$"))
+           (org-overriding-columns-format
+             "%35Item %Type %Start %Fin %Rating")
+           (org-agenda-cmp-user-defined
+             (cmp-date-property-stamp "Start"))
+           (org-agenda-sorting-strategy
+             '(user-defined-down))
+           (org-agenda-overriding-header "C-u r to re-run Type={.}")
+           (org-agenda-view-columns-initially t)
+           )
+         )
+       ("a" "Default agenda" 
+         (
+           ;; TODO 会議など、今日の calendar 表示
+           (agenda ""
+            (
+              (org-agenda-span 'day)
+              (org-agenda-log-mode-items '(closed clock))
+              (org-agenda-show-log t)
+              (org-super-agenda-groups
+                '(
+                   (:name "Today"
+                     :scheduled today
+                     :deadline today)
+                   (:name "Clocked today"
+                     :log t)
+                   (:name "Overdue"
+                     :deadline past)
+                   (:name "Reschedule"
+                     :scheduled past)
+                   (:name "Due Soon"
+                     :deadline future
+                     :scheduled future)
+                   (:discard (:anything t))
+                   ))))
+           (tags (concat "w" (format-time-string "%V"))
+             ((org-agenda-overriding-header  (concat "--\nToDos Week " (format-time-string "%V")))
+               (org-super-agenda-groups
+                 '((:discard (:deadline t))
+                    (:discard (:scheduled t))
+                    (:discard (:todo ("DONE")))
+                    ))))
+           (alltodo ""
+             (
+               (org-agenda-overriding-header "Tasks")
+               (org-super-agenda-groups
+                 '(
+                    (:name "Important"
+                      :tag "Important"
+                      :priority "A"
+                      )
+                    (:name "Next Action"
+                      :category "Next Action"
+                      :priority "B")
+                    (:name "Projects"
+                      :file-path "projects/")
+                    (:name "Areas"
+                      :file-path "areas/")
+                    (:name "Resources"
+                      :file-path "resources/")
+                    (:name "Inbox"
+                      :category "Inbox")
+                    ))
+               ))
+           ))
+       )
+    )
   (setq org-capture-templates
     '(
-       ("t" "Task" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
+       ("t" "Task" entry (file+headline "gtd.org" "Inbox")
          "* TODO %? \nCREATED: %U\n %i")
-       ("T" "Task from protocol" entry (file+headline "~/Dropbox/memo/org/gtd.org" "Inbox")
+       ("n" "Task Today" entry (file+headline "gtd.org" "Inbox")
+         "* TODO %? \nCREATED: %U\nSCHEDULED: <%<%Y-%m-%d %a>>\n%i ")
+       ("T" "Task from protocol" entry (file+headline "gtd.org" "Inbox")
          "* TODO %? [[%:link][%:description]] \nCREATED: %U\n%i\n\n")
-       ("L" "ReadItLater" entry (file+headline "~/Dropbox/memo/org/gtd.org" "ReadItLater")
+       ("L" "ReadItLater" entry (file+headline "gtd.org" "ReadItLater")
          "* TODO %? [[%:link][%:description]] \nCREATED: %U\n%i\n")
-       ("m" "Memo" entry (file+headline org-default-notes-file "Memo")
-         "* %? %U %i")
-       ("M" "Memo from protocol" entry (file+headline org-default-notes-file "Memo")
-         "* %? [[%:link][%:description]] \nCaptured On: %U\n%i\n")
-       ("R" "Review entry" entry (file+datetree "~/Dropbox/memo/org/review.org") (file "~/Dropbox/memo/org/template-review.org"))
        ))
   ;; journal
   (setq org-journal-file-format "%Y-%m-%d")
@@ -158,9 +372,10 @@
   (setq org-journal-find-file 'find-file)
   (setq org-extend-today-until '3)
   (add-hook 'org-journal-after-entry-create-hook 'evil-insert-state)
-
   (setq org-startup-with-inline-images t)
 
+  (setq org-M-RET-may-split-line t)
+  ;; FIXME 動いていない
   (when (winp)
     (setq org-download-screenshot-method "magick convert clipboard: %s")
     )
@@ -172,43 +387,6 @@
   (setq org-use-sub-superscripts nil)
   (setq org-export-with-sub-superscripts nil)
   )
-(after! evil-org
-  (remove-hook 'org-tab-first-hook #'+org-cycle-only-current-subtree-h)
-  )
-(after! org-roam
-  (map!
-    "C-c n l" #'org-roam-buffer-toggle
-    "C-c n f" #'org-roam-node-find
-    "C-c n i" #'org-roam-node-insert
-    "C-c n d" #'org-roam-dailies-goto-today
-    :map org-mode-map
-    "C-M-i" #'completion-at-point
-    )
-  (setq org-roam-capture-templates
-    '(
-       ("d" "default" plain
-         "%? "
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
-         :unnarrowed t)
-       ("l" "programming language" plain
-         "* Characteristics\n\n- Family: %?\n- Inspired by: \n\n* Reference:\n\n"
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
-       ("b" "book notes" plain
-         "\n* Source\n\nAuthor: %^{Author}\nTitle: ${title}\nYear: %^{Year}\n\n* Summary\n\n%?"
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
-         :unnarrowed t)
-       ("p" "project" plain "* Goals\n\n%?\n\n* Tasks\n\n** TODO Add initial tasks\n\n* Dates\n\n"
-         :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+filetags: Project")
-         :unnarrowed t)
-       )
-    )
-  (setq org-roam-dailies-capture-templates
-    '(("d" "default" entry "* %<%H:%M> %?"
-        :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n"))
-       )
-    )
-  )
 
 (map! :after evil-org
   :map evil-org-mode-map
@@ -217,3 +395,108 @@
   :ni "M-<left>" #'org-metaleft
   :ni "M-<right>" #'org-metaright
   )
+
+(after! evil-org
+  (remove-hook 'org-tab-first-hook #'+org-cycle-only-current-subtree-h)
+  )
+(after! org-roam
+  (map!
+    "C-c n l" #'org-roam-buffer-toggle
+    "C-c n f" #'org-roam-node-find
+    "C-c l" #'org-roam-dailies-goto-today
+    "C-c d" #'org-roam-dailies-map
+    :map org-mode-map
+    "C-c n i" #'org-roam-node-insert
+    "C-M-i" #'completion-at-point
+    )
+  (setq org-roam-completion-everywhere nil)
+
+  (setq org-roam-node-display-template
+    (format "%s ${doom-hierarchy:*} %s"
+      (propertize "${doom-type:15}" 'face 'font-lock-keyword-face)
+      (propertize "${doom-tags:10}" 'face '(:inherit org-tag :box nil))))
+  (setq org-roam-dailies-capture-templates
+    '(("d" "default" entry "* %<%H:%M> %?"
+        :target (file+head "%<%Y-%m-%d>.org"
+                  "#+title: %<%Y-%m-%d>
+
+* 今日の目標
+
+* Tasks
+
+
+"))
+       )
+    )
+  (setq org-roam-capture-templates
+    '(
+       ("d" "default (Zettelkasten Permanent)" plain
+         "%?"
+         :target (file+head "zk/%<%Y%m%d%H%M%S>-${slug}.org"
+                   "#+title: ${title}
+#+filetags: :draft:")
+         :unnarrowed t)
+       ("p" "project" plain
+         "* 目的・目標
+
+- %?
+
+* Tasks
+** TODO Add initial tasks
+
+* Notes
+"
+         :target (file+head "projects/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+         :unnarrowed t)
+       ("a" "area" plain
+         "* 目標
+# このエリアで達成したい長期的な目標や維持すべき基準
+%?
+
+* Projects
+
+* Resource
+
+"
+         :target (file+head "areas/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+         :unnarrowed t)
+       ("r" "rez (Resonance Calendar)" plain "* ${title}
+:PROPERTIES:
+:Type: %?
+:Start: 
+:Fin: 
+:Canceled: 
+:Rating: 
+:Creator: 
+:URL: 
+:END:
+
+** Tasks
+*** TODO 読む・見る
+
+** Key Ideas
+
+** Review
+
+** Quotes
+
+** Notes
+
+"
+         :target (file+head "resources/rez/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+         :unnarrowed t)
+       )
+    )
+  )
+
+(use-package! org-super-agenda
+  :after org-agenda
+  :hook (org-agenda-mode . org-super-agenda-mode)
+  :config
+  ;; evil keymap https://github.com/alphapapa/org-super-agenda/issues/50
+  (setq org-super-agenda-header-map (make-sparse-keymap))
+  )
+
+(use-package! org-roam-timestamps
+  :after org-roam
+  :config (org-roam-timestamps-mode))
