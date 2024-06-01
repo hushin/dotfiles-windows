@@ -528,6 +528,34 @@ Refer to `org-agenda-prefix-format' for more information."
 "
          :target (file+head "resources/rez/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
          :unnarrowed t)
+       ("e" "exp (Experiments)" plain "* ${title}
+:PROPERTIES:
+:Type: Exp
+:Start:
+:Fin:
+:Assess: <yyyy-mm-dd aaa>
+:Qs:
+:Status:
+:Outcome:
+:END:
+
+** Tasks
+
+** 仮説
+
+** 実験手順
+
+** 観察とメモ
+
+** 結果と考察
+
+** 注意点
+
+** 次の実験アイデア
+
+"
+         :target (file+head "resources/rez/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+         :unnarrowed t)
        )
     )
 

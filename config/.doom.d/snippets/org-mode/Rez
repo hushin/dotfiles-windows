@@ -1,0 +1,29 @@
+# -*- mode: snippet -*-
+# name: Rez
+# key: rez
+# --
+* $0
+:PROPERTIES:
+:Type:     Book
+:Start:
+:Fin:
+:Canceled:
+:Rating:
+:Creator:
+:URL:
+:ReleaseDate:
+:END:
+
+** Why
+# なぜ読もう・見ようと思ったのか
+
+** Tasks
+*** TODO 読む・見る
+
+** Key Ideas
+
+** Review
+
+** Quotes
+
+** Notes

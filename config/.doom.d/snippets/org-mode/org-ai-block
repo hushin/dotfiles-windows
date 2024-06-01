@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: org-ai-block
+# key: ai
+# --
+`(let ((level (if (org-before-first-heading-p)
+                  1
+                (save-excursion
+                  (org-back-to-heading)
+                  (+ (org-current-level) 1)))))
+   (make-string level ?*))` AI Chat
+#+begin_ai md
+[SYS]: ${1:You are a helpful assistant.}
+
+[ME]: $0
+#+end_ai
