@@ -342,7 +342,7 @@ Refer to `org-agenda-prefix-format' for more information."
          )
        ("a" "Default agenda" 
          (
-           (todo "NEXT" ((org-agenda-overriding-header "NEXT")))
+           (todo "NEXT" ((org-agenda-overriding-header "\nNEXT")))
            ;; TODO 会議など、今日の calendar 表示
            (agenda ""
             (
@@ -356,13 +356,20 @@ Refer to `org-agenda-prefix-format' for more information."
                      :deadline past)
                    (:name "Reschedule"
                      :scheduled past)
-                   (:name "Due Soon"
-                     :deadline future
-                     :scheduled future)
+                   ;; (:name "Due Soon"
+                   ;;   :deadline future
+                   ;;   :scheduled future                     ;; なぜか 将来の scheduled が表示されない
+                   ;;   )
                    (:discard (:anything t))
                    ))))
+           (agenda ""
+             (
+               (org-agenda-start-day "+1d")
+               (org-agenda-span 12)
+               (org-agenda-show-log nil)
+               (org-agenda-clockreport-mode nil)))
            (tags (concat "w" (format-time-string "%V"))
-             ((org-agenda-overriding-header  (concat "--\nToDos Week " (format-time-string "%V")))
+             ((org-agenda-overriding-header  (concat "ToDos Week " (format-time-string "%V")))
                (org-super-agenda-groups
                  '((:discard (:deadline t))
                     (:discard (:scheduled t))
@@ -380,6 +387,8 @@ Refer to `org-agenda-prefix-format' for more information."
                     (:name "Next Action"
                       :category "Next Action"
                       :priority "B")
+                    (:name "Shopping"
+                      :category "Shopping")
                     (:name "Projects"
                       :file-path "projects/")
                     (:name "Areas"
@@ -559,6 +568,63 @@ Refer to `org-agenda-prefix-format' for more information."
        )
     )
 
+  (defun my/create-weekly-review ()
+    "Create a new org-roam file for weekly review using org-roam-capture-."
+    (interactive)
+      (let* ((week-number (format-time-string "%V"))
+         (year (format-time-string "%Y"))
+         (slug (concat year "w" week-number))
+         (file-path (format "weekly/%s.org" slug))
+         (title (format "Weekly Review %sw%s" year week-number)))
+      (org-roam-capture-
+        :node (org-roam-node-create :title title)
+        :props '(:finalize find-file)
+        :templates
+        `(("w" "weekly review" plain
+            "* Review
+レビュー日 <%<%Y-%m-%d %a>>
+** 明確にする
+*** 把握する
+Inboxに収集する
+- [ ] Keep memo
+- [ ] 紙の書類
+- [ ] コミュニケーションツール
+  - [ ] メール
+  - [ ] LINE
+  - [ ] チャットツール
+- [ ] はてブ
+- [ ] カレンダーの予定を確認し、適切なアクションを登録する
+*** 頭を空っぽにする
+5分で新しいプロジェクト、連絡待ちの事柄、いつかやろうと思っていることなどを書き出し、頭を空にする
+** 見極める
+*** Inboxを空にする
+- [ ] Inboxに入っている明らかになっていないものを仕分け、Inboxを空にする
+  - すぐにできるものは実行
+*** アクションリストを見直す
+- [ ] 完了したアクションはDONEにする
+- [ ] 必要があればリマインダーをセットする
+- [ ] 連絡待ちリストの更新
+- [ ] 参考資料などを適切な場所に保存
+*** 次に取るべき行動を考える
+- [ ] アクションを推進するためのタスクを定義して追加する
+  - プロジェクトリストや行動できていない項目について、次に取るべき行動は何かを考える
+** 整理する
+- [ ] プロジェクトリストの更新
+  - 長期的なゴールやビジョンに沿ったアクションを見直す
+  - プロジェクトリストを見返し、目標や結果の状態を一つ一つ評価する
+  - 各項目について少なくとも1つの次の取るべき行動があることを確認する
+- [ ] いつかやるリストの更新
+** 今週振り返り
+*** Good
+*** Problem
+*** Try
+** 来週達成したいこと
+"
+            :if-new (file+head ,file-path
+                      ,(format "#+title: %s\n" title))
+            :immediate-finish t
+            :unnarrowed t)))))
+  
   (defun org-roam-protocol-open-ref (info)
     "Process an org-protocol://roam-ref?ref= style url with INFO."
     (let ((org-capture-link-is-already-stored t))
