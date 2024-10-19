@@ -306,6 +306,7 @@ Refer to `org-agenda-prefix-format' for more information."
     ;; org-agenda-compact-blocks t
     ;; org-agenda-start-with-log-mode t
     org-agenda-start-day nil)
+
   (setq org-agenda-custom-commands
     '(
        ("r" "Resonance Cal" tags "Type={.}"
@@ -435,6 +436,51 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-export-with-creator nil)
   (setq org-use-sub-superscripts nil)
   (setq org-export-with-sub-superscripts nil)
+
+  
+  (defun my/get-title-or-filename (buffer file)
+    "Get the Org file #+TITLE property or use the filename if title is nil."
+    (with-current-buffer buffer
+      (or (org-element-map (org-element-parse-buffer 'element) 'keyword
+            (lambda (kw)
+              (when (string= "TITLE" (org-element-property :key kw))
+                (org-element-property :value kw)))
+            nil t)
+        (file-name-nondirectory file))))
+
+  (defun my/collect-next-tasks-from-agenda-files ()
+    "Collect all tasks with TODO keyword 'NEXT' from `org-agenda-files` and insert them with links at point."
+    (interactive)
+    (let ((tasks '())  ; A list to store the tasks we find
+           (agenda-files (org-agenda-files)))  ; Get the list of agenda files
+
+      ;; Iterate over all agenda files
+      (dolist (file agenda-files)
+        (let ((buffer (find-file-noselect file)))
+          (with-current-buffer buffer
+            (let ((title-or-filename (my/get-title-or-filename buffer file)))  ; Get title or fallback to filename
+              ;; Search the buffer for any heading with the TODO keyword "NEXT"
+              (org-element-map (org-element-parse-buffer) 'headline
+                (lambda (headline)
+                  (let ((todo-keyword (org-element-property :todo-keyword headline)))
+                    (when (and todo-keyword (string= todo-keyword "NEXT"))
+                      (let ((title (org-element-property :raw-value headline))
+                             (begin (org-element-property :begin headline)))
+                        (push (list title begin file title-or-filename) tasks))))))))))
+
+      ;; Insert the collected tasks at point
+      (dolist (task tasks)
+        (let ((task-title (nth 0 task))
+               (task-pos   (nth 1 task))
+               (task-file  (nth 2 task))
+               (task-category (nth 3 task)))  ; Access the title or filename
+          (insert (format "- [ ] [[file:%s::*%s][%s]] : %s\n"
+                    task-file
+                    task-title
+                    task-title
+                    task-category
+                    ))))))
+
   )
 
 (map! :after evil-org
@@ -595,7 +641,7 @@ Inboxに収集する
 - [ ] はてブ
 - [ ] カレンダーの予定を確認し、適切なアクションを登録する
 *** 頭を空っぽにする
-5分で新しいプロジェクト、連絡待ちの事柄、いつかやろうと思っていることなどを書き出し、頭を空にする
+- [ ] 5分で新しいプロジェクト、連絡待ちの事柄、いつかやろうと思っていることなどを書き出し、頭を空にする
 ** 見極める
 *** Inboxを空にする
 - [ ] Inboxに入っている明らかになっていないものを仕分け、Inboxを空にする
@@ -679,6 +725,7 @@ Inboxに収集する
 ")
          :unnarrowed t)
        ))
+
   )
 
 (use-package! org-super-agenda
