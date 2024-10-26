@@ -189,6 +189,26 @@
         (recentf-remove-if-non-kept file-path))
       (message "File moved to archives: %s" archive-path))))
 
+(defun org-roam-move-file-to-canceled-archives ()
+  "Move the current org-roam file to the archives/canceled directory, maintaining the directory structure, and open the moved file in a buffer."
+  (interactive)
+  (let* ((file-path (buffer-file-name))
+         (relative-path (file-relative-name file-path org-roam-directory))
+         (archive-path (concat (file-name-as-directory org-roam-directory)
+                               "archives/canceled/"
+                               relative-path)))
+    (when (and (org-roam-file-p)
+               (not (string-prefix-p (concat (file-name-as-directory org-roam-directory)
+                                             "archives/canceled/")
+                                     file-path)))
+      (mkdir (file-name-directory archive-path) t)
+      (rename-file file-path archive-path)
+      (set-visited-file-name archive-path)
+      (set-buffer-modified-p nil)
+      (when (fboundp 'recentf-add-file)
+        (recentf-add-file archive-path)
+        (recentf-remove-if-non-kept file-path))
+      (message "File moved to archives: %s" archive-path))))
 (map! :leader
   (:prefix "f"
     :desc "Move buffer file to directory" "m" #'move-buffer-file-to-directory)
@@ -196,6 +216,8 @@
     :desc "Delete file" "D" #'delete-file-and-buffer)
   (:prefix "f"
     :desc "archive file" "A" #'org-roam-move-file-to-archives)
+  (:prefix "f"
+    :desc "archive/cancel file" "Q" #'org-roam-move-file-to-canceled-archives)
   )
 
 (after! org
@@ -206,7 +228,7 @@
     )
   (setq org-todo-keywords
     (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-             (sequence "WAITING(w/!)" "|" "CANCELLED(c/!)"))))
+             (sequence "WAITING(w/!)" "|" "CANCELED(c/!)"))))
   (setq org-log-done 'time)
   (defun my/property-values-function (property)
     "Return allowed values for PROPERTY."
@@ -517,9 +539,11 @@ Refer to `org-agenda-prefix-format' for more information."
 
 * 今日の目標
 
-* Tasks
+* 思い+タスク
 
 
+
+- [ ] 日記を書く
 "))
        )
     )
