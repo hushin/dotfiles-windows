@@ -469,81 +469,95 @@ Refer to `org-agenda-prefix-format' for more information."
                 (org-element-property :value kw)))
             nil t)
         (file-name-nondirectory file))))
-
   (defun my/collect-next-tasks-from-agenda-files ()
-  "Collect all NEXT tasks and overdue incomplete tasks from `org-agenda-files` and insert them with links at point."
-  (interactive)
-  (let (tasks  ; Initialize empty list
-        (today (format-time-string "%Y-%m-%d")))  ; Get today's date
-    ;; Iterate over all agenda files
-    (dolist (file (org-agenda-files))
-      (let ((buffer (find-file-noselect file)))
-        (with-current-buffer buffer
-          (org-with-wide-buffer
-           (let ((title-or-filename (my/get-title-or-filename buffer file))
-                 (parsed-buffer (org-element-parse-buffer 'headline)))
-             ;; Search the buffer for relevant headlines
-             (org-element-map parsed-buffer 'headline
-               (lambda (headline)
-                 (let* ((todo-keyword (org-element-property :todo-keyword headline))
-                        (title (org-element-property :raw-value headline))
-                        (begin (org-element-property :begin headline))
-                        (deadline (org-element-property :deadline headline))
-                        (scheduled (org-element-property :scheduled headline))
-                        (is-next (and todo-keyword (string= todo-keyword "NEXT")))
-                        (is-not-done (and todo-keyword (not (string= todo-keyword "DONE"))))
-                        (deadline-date (when deadline 
-                                      (format-time-string "%Y-%m-%d" 
-                                        (org-timestamp-to-time deadline))))
-                        (scheduled-date (when scheduled 
-                                       (format-time-string "%Y-%m-%d" 
-                                         (org-timestamp-to-time scheduled))))
-                        (is-overdue (or 
-                                   (and deadline-date (string< deadline-date today))
-                                   (and scheduled-date (string< scheduled-date today)))))
-                   ;; Collect if it's either a NEXT task or an overdue incomplete task
-                   (when (or is-next
-                           (and is-not-done is-overdue))
-                     (push (list 
-                            title 
-                            begin 
-                            file 
-                            title-or-filename
-                            (cond
-                              (is-next "NEXT")
-                              ((and deadline-date is-overdue) (format "期限超過 (%s)" deadline-date))
-                              ((and scheduled-date is-overdue) (format "予定超過 (%s)" scheduled-date)))
-                            todo-keyword)
-                           tasks))))))))))
-    
-    ;; Sort tasks: NEXT tasks first, then by date
-    (setq tasks (sort tasks
-                     (lambda (a b)
-                       (let ((a-type (nth 4 a))
+    "Collect NEXT tasks, today's tasks, and overdue incomplete tasks from `org-agenda-files`."
+    (interactive)
+    (let (tasks
+           (today (format-time-string "%Y-%m-%d")))
+      (dolist (file (org-agenda-files))
+        (let ((buffer (find-file-noselect file)))
+          (with-current-buffer buffer
+            (org-with-wide-buffer
+              (let ((title-or-filename (my/get-title-or-filename buffer file))
+                     (parsed-buffer (org-element-parse-buffer 'headline)))
+                (org-element-map parsed-buffer 'headline
+                  (lambda (headline)
+                    (let* ((todo-keyword (org-element-property :todo-keyword headline))
+                            (title (org-element-property :raw-value headline))
+                            (begin (org-element-property :begin headline))
+                            (deadline (org-element-property :deadline headline))
+                            (scheduled (org-element-property :scheduled headline))
+                            (is-next (and todo-keyword (string= todo-keyword "NEXT")))
+                            (is-not-done (and todo-keyword (not (string= todo-keyword "DONE"))))
+                            (deadline-date (when deadline 
+                                             (format-time-string "%Y-%m-%d" 
+                                               (org-timestamp-to-time deadline))))
+                            (scheduled-date (when scheduled 
+                                              (format-time-string "%Y-%m-%d" 
+                                                (org-timestamp-to-time scheduled))))
+                            (is-overdue (or 
+                                          (and deadline-date (string< deadline-date today))
+                                          (and scheduled-date (string< scheduled-date today))))
+                            (is-today (or
+                                        (and deadline-date (string= deadline-date today))
+                                        (and scheduled-date (string= scheduled-date today)))))
+                      ;; Collect if it's NEXT, today's task, or overdue
+                      (when (or is-next
+                              (and is-not-done (or is-today is-overdue)))
+                        (push (list 
+                                title 
+                                begin 
+                                file 
+                                title-or-filename
+                                (cond
+                                  (is-next "NEXT")
+                                  ((and deadline-date is-overdue) (format "期限超過 (%s)" deadline-date))
+                                  ((and scheduled-date is-overdue) (format "予定超過 (%s)" scheduled-date))
+                                  ((and deadline-date is-today) "今日期限")
+                                  ((and scheduled-date is-today) "今日予定"))
+                                todo-keyword)
+                          tasks))))))))))
+      
+      ;; Sort tasks by priority: NEXT -> Today's tasks -> Overdue tasks
+      (setq tasks (sort tasks
+                    (lambda (a b)
+                      (let ((a-type (nth 4 a))
                              (b-type (nth 4 b)))
-                         (if (string= a-type "NEXT")
-                             (if (string= b-type "NEXT")
-                                 (string< (car a) (car b))  ; Both NEXT, sort by title
-                               t)  ; a is NEXT, b is not
-                           (if (string= b-type "NEXT")
-                               nil  ; a is not NEXT, b is NEXT
-                             (string< (car a) (car b))))))))  ; Neither is NEXT, sort by title
-    
-    ;; Insert the collected tasks at point
-    (dolist (task tasks)
-      (let ((task-title (nth 0 task))
-            (task-pos   (nth 1 task))
-            (task-file  (nth 2 task))
-            (task-category (nth 3 task))
-            (task-type (nth 4 task))
-            (todo-keyword (nth 5 task)))
-        (insert (format "- [ ] [[file:%s::*%s][%s]] (%s) : %s\n"
-                       task-file
-                       task-title
-                       task-title
-                       task-type
-                       task-category
-                  )
+                        (cond
+                          ;; NEXT tasks come first
+                          ((string= a-type "NEXT")
+                            (if (string= b-type "NEXT")
+                              (string< (car a) (car b))  ; Both NEXT, sort by title
+                              t))  ; a is NEXT, b is not
+                          ;; Today's tasks come second
+                          ((or (string= a-type "今日期限") (string= a-type "今日予定"))
+                            (if (string= b-type "NEXT")
+                              nil  ; b is NEXT
+                              (if (or (string= b-type "今日期限") (string= b-type "今日予定"))
+                                (string< (car a) (car b))  ; Both today, sort by title
+                                t)))  ; a is today, b is overdue
+                          ;; Overdue tasks come last
+                          (t (if (or (string= b-type "NEXT") 
+                                   (string= b-type "今日期限")
+                                   (string= b-type "今日予定"))
+                               nil  ; b is NEXT or today
+                               (string< (car a) (car b)))))))))  ; Both overdue, sort by title
+      
+      ;; Insert the collected tasks at point
+      (dolist (task tasks)
+        (let ((task-title (nth 0 task))
+               (task-pos   (nth 1 task))
+               (task-file  (nth 2 task))
+               (task-category (nth 3 task))
+               (task-type (nth 4 task))
+               (todo-keyword (nth 5 task)))
+          (insert (format "- [ ] [[file:%s::*%s][%s]] (%s) : %s\n"
+                    task-file
+                    task-title
+                    task-title
+                    task-type
+                    task-category
+                    ))))))
   )
 
 (map! :after evil-org
