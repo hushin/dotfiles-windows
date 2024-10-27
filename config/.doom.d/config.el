@@ -628,6 +628,13 @@ Refer to `org-agenda-prefix-format' for more information."
 
 * Projects
 
+* Someday Projects
+:PROPERTIES:
+:CATEGORY: Someday PJ
+:END:
+
+* 定期タスク
+
 * Resource
 
 "
