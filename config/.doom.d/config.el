@@ -459,7 +459,6 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-use-sub-superscripts nil)
   (setq org-export-with-sub-superscripts nil)
 
-  
   (defun my/get-title-or-filename (buffer file)
     "Get the Org file #+TITLE property or use the filename if title is nil."
     (with-current-buffer buffer
@@ -469,6 +468,7 @@ Refer to `org-agenda-prefix-format' for more information."
                 (org-element-property :value kw)))
             nil t)
         (file-name-nondirectory file))))
+
   (defun my/collect-next-tasks-from-agenda-files ()
     "Collect NEXT tasks, today's tasks, and overdue incomplete tasks from `org-agenda-files`."
     (interactive)
@@ -524,40 +524,44 @@ Refer to `org-agenda-prefix-format' for more information."
                       (let ((a-type (nth 4 a))
                              (b-type (nth 4 b)))
                         (cond
-                          ;; NEXT tasks come first
                           ((string= a-type "NEXT")
                             (if (string= b-type "NEXT")
-                              (string< (car a) (car b))  ; Both NEXT, sort by title
-                              t))  ; a is NEXT, b is not
-                          ;; Today's tasks come second
+                              (string< (car a) (car b))
+                              t))
                           ((or (string= a-type "今日期限") (string= a-type "今日予定"))
                             (if (string= b-type "NEXT")
-                              nil  ; b is NEXT
+                              nil
                               (if (or (string= b-type "今日期限") (string= b-type "今日予定"))
-                                (string< (car a) (car b))  ; Both today, sort by title
-                                t)))  ; a is today, b is overdue
-                          ;; Overdue tasks come last
+                                (string< (car a) (car b))
+                                t)))
                           (t (if (or (string= b-type "NEXT") 
                                    (string= b-type "今日期限")
                                    (string= b-type "今日予定"))
-                               nil  ; b is NEXT or today
-                               (string< (car a) (car b)))))))))  ; Both overdue, sort by title
+                               nil
+                               (string< (car a) (car b)))))))))
       
       ;; Insert the collected tasks at point
       (dolist (task tasks)
-        (let ((task-title (nth 0 task))
-               (task-pos   (nth 1 task))
-               (task-file  (nth 2 task))
-               (task-category (nth 3 task))
-               (task-type (nth 4 task))
-               (todo-keyword (nth 5 task)))
-          (insert (format "- [ ] [[file:%s::*%s][%s]] (%s) : %s\n"
-                    task-file
-                    task-title
-                    task-title
-                    task-type
-                    task-category
-                    ))))))
+        (let* ((task-title (nth 0 task))
+                (task-pos   (nth 1 task))
+                (task-file  (nth 2 task))
+                (task-category (nth 3 task))
+                (task-type (nth 4 task))
+                (todo-keyword (nth 5 task))
+                ;; Check if the title contains a link by looking for [[ pattern
+                (contains-link (string-match-p "\\[\\[" task-title)))
+          (insert 
+            (format "** TODO %s (%s) : %s\n"
+              ;; If title contains a link, use it as is, otherwise create a link to the heading
+              (if contains-link
+                task-title
+                (format "[[file:%s::*%s][%s]]"
+                  task-file
+                  task-title
+                  task-title))
+              task-type
+              task-category))))))
+  
   )
 
 (map! :after evil-org
@@ -597,8 +601,9 @@ Refer to `org-agenda-prefix-format' for more information."
 * 思い+タスク
 
 
+** TODO 日記を書く
 
-- [ ] 日記を書く
+* できれば
 "))
        )
     )
