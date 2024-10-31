@@ -436,6 +436,25 @@ Refer to `org-agenda-prefix-format' for more information."
        ("L" "ReadItLater" entry (file+headline "gtd.org" "ReadItLater")
          "* TODO %? [[%:link][%:description]] \nCREATED: %U\n%i\n")
        ))
+
+  ;; C-S-Enter で見出し作ったときにタイムスタンプをつける
+  (defun my/org-insert-created-timestamp ()
+    "Insert timestamp as plain text after heading"
+    (interactive)
+    (let ((heading-pos (point)))  ; 現在位置（見出し）を保存
+      (org-back-to-heading t)
+      (end-of-line)
+      (insert "\nCREATED: " (format-time-string "[%Y-%m-%d %a %H:%M]"))
+      (goto-char heading-pos)     ; 元の位置（見出し末尾）に戻る
+      (end-of-line)))            ; 見出しの末尾に移動
+  (defun my/org-insert-todo-with-timestamp (&rest _)
+    "Advice function to add timestamp after creating a TODO heading"
+    (when (org-at-heading-p)
+      (my/org-insert-created-timestamp)))
+
+  (advice-add 'org-insert-todo-heading-respect-content
+    :after #'my/org-insert-todo-with-timestamp)
+  
   ;; journal
   (setq org-journal-file-format "%Y-%m-%d")
   (setq org-journal-date-format "%Y-%m-%d %A")
@@ -458,6 +477,7 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-export-with-creator nil)
   (setq org-use-sub-superscripts nil)
   (setq org-export-with-sub-superscripts nil)
+
 
   (defun my/get-title-or-filename (buffer file)
     "Get the Org file #+TITLE property or use the filename if title is nil."
