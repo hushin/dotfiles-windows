@@ -783,21 +783,6 @@ Inboxに収集する
             :immediate-finish t
             :unnarrowed t)))))
   
-  (defun org-roam-protocol-open-ref (info)
-    "Process an org-protocol://roam-ref?ref= style url with INFO."
-    (let ((org-capture-link-is-already-stored t))
-      (org-roam-capture-
-        :keys (plist-get info :template)
-        :node (org-roam-node-create :title (plist-get info :title))
-        :info (list :ref (plist-get info :ref)
-                :body (plist-get info :body)
-                ;; 独自の変数を遅れるように追加
-                :type (plist-get info :type)
-                :creator (plist-get info :creator)
-                :releaseDate (plist-get info :releaseDate)
-                )
-        :templates org-roam-capture-ref-templates))
-    nil)
   (setq org-roam-capture-ref-templates
     '(
        ("r" "ref" plain
@@ -897,6 +882,24 @@ DIR is the directory name for display purposes."
     (interactive)
     (let ((files (my/org-list-files-in-directory "projects")))
       (my/org-generate-buffer-from-files files "projects")))
+  )
+
+(after! org-roam-protocol
+  (defun org-roam-protocol-open-ref (info)
+    "Process an org-protocol://roam-ref?ref= style url with INFO."
+    (let ((org-capture-link-is-already-stored t))
+      (org-roam-capture-
+        :keys (plist-get info :template)
+        :node (org-roam-node-create :title (plist-get info :title))
+        :info (list :ref (plist-get info :ref)
+                :body (plist-get info :body)
+                ;; 独自の変数を送れるように追加
+                :type (plist-get info :type)
+                :creator (plist-get info :creator)
+                :releaseDate (plist-get info :releaseDate)
+                )
+        :templates org-roam-capture-ref-templates))
+    nil)
   )
 
 (use-package! org-super-agenda
