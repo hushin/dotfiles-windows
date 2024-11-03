@@ -693,12 +693,11 @@ Also reduces indentation of nested bullet points by 2 spaces."
     "C-c n f" #'org-roam-node-find
     "C-c l" #'org-roam-dailies-goto-today
     "C-c d" #'org-roam-dailies-map
+    :n "[ D" #'org-roam-dailies-goto-previous-note
+    :n "] D" #'org-roam-dailies-goto-next-note
     :map org-mode-map
     "C-c n i" #'org-roam-node-insert
     "C-M-i" #'completion-at-point
-    :n
-    "[ D" #'org-roam-dailies-goto-previous-note
-    "] D" #'org-roam-dailies-goto-next-note
     )
   (setq org-roam-completion-everywhere nil)
 
