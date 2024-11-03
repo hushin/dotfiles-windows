@@ -230,6 +230,8 @@
     (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
              (sequence "WAITING(w/!)" "|" "CANCELED(c/!)"))))
   (setq org-log-done 'time)
+  ; 見出し入れるときは空行を入れない
+  (setq org-blank-before-new-entry '((heading . nil) (plain-list-item . nil)))
   (defun my/property-values-function (property)
     "Return allowed values for PROPERTY."
     (cond
