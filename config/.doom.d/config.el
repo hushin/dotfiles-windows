@@ -393,6 +393,7 @@ Refer to `org-agenda-prefix-format' for more information."
                (org-agenda-span 12)
                (org-agenda-show-log nil)
                (org-agenda-clockreport-mode nil)))
+           (todo "WAITING" ((org-agenda-overriding-header "\nWAITING")))
            (tags (concat "w" (format-time-string "%V"))
              ((org-agenda-overriding-header  (concat "ToDos Week " (format-time-string "%V")))
                (org-super-agenda-groups
@@ -524,7 +525,9 @@ Refer to `org-agenda-prefix-format' for more information."
                             (deadline (org-element-property :deadline headline))
                             (scheduled (org-element-property :scheduled headline))
                             (is-next (and todo-keyword (string= todo-keyword "NEXT")))
-                            (is-not-done (and todo-keyword (not (string= todo-keyword "DONE"))))
+                            (is-not-done (and todo-keyword 
+                                           (not (or (string= todo-keyword "DONE") 
+                                                  (string= todo-keyword "CANCELED")))))
                             (deadline-date (when deadline 
                                              (format-time-string "%Y-%m-%d" 
                                                (org-timestamp-to-time deadline))))
@@ -727,8 +730,6 @@ Also reduces indentation of nested bullet points by 2 spaces."
 * 今日の目標
 
 * 思い+タスク
-
-
 ** TODO 日記を書く
 
 * できれば
