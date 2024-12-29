@@ -835,19 +835,39 @@ Also reduces indentation of nested bullet points by 2 spaces."
     )
 
   (defun my/create-weekly-review ()
-    "Create a new org-roam file for weekly review using org-roam-capture-."
+    "Create a new org-roam file for the current week's review."
     (interactive)
-      (let* ((week-number (format-time-string "%V"))
-         (year (format-time-string "%Y"))
-         (slug (concat year "w" week-number))
-         (file-path (format "weekly/%s.org" slug))
-         (title (format "Weekly Review %sw%s" year week-number)))
-      (org-roam-capture-
-        :node (org-roam-node-create :title title)
-        :props '(:finalize find-file)
-        :templates
-        `(("w" "weekly review" plain
-            "* Review
+    (let* ((week-number (format-time-string "%V"))
+            (year (format-time-string "%Y"))
+            (slug (concat year "w" week-number))
+            (file-path (format "weekly/%s.org" slug))
+            (title (format "Weekly Review %sw%s" year week-number)))
+      (my/org-roam-capture-weekly title file-path)))
+
+  (defun my/create-previous-weekly-review ()
+    "Create a new org-roam file for the previous week's review."
+    (interactive)
+    (let* ((week-number (string-to-number (format-time-string "%V")))
+            (year (string-to-number (format-time-string "%Y")))
+            (previous-week (if (= week-number 1)
+                             52
+                             (1- week-number)))
+            (adjusted-year (if (= week-number 1)
+                             (1- year)
+                             year))
+            (slug (concat (number-to-string adjusted-year) "w" (format "%02d" previous-week)))
+            (file-path (format "weekly/%s.org" slug))
+            (title (format "Weekly Review %sw%s" adjusted-year (format "%02d" previous-week))))
+      (my/org-roam-capture-weekly title file-path)))
+  
+  (defun my/org-roam-capture-weekly (title file-path)
+    "Helper function to capture a weekly review in org-roam."
+    (org-roam-capture-
+      :node (org-roam-node-create :title title)
+      :props '(:finalize find-file)
+      :templates
+      `(("w" "weekly review" plain
+          "* Review
 レビュー日 <%<%Y-%m-%d %a>>
 ** 明確にする
 *** 把握する
@@ -887,10 +907,9 @@ Inboxに収集する
 *** Try
 ** 来週達成したいこと
 "
-            :if-new (file+head ,file-path
-                      ,(format "#+title: %s\n" title))
-            :immediate-finish t
-            :unnarrowed t)))))
+          :if-new (file+head ,file-path ,(format "#+title: %s\n" title))
+          :immediate-finish t
+          :unnarrowed t))))
   
   (setq org-roam-capture-ref-templates
     '(
