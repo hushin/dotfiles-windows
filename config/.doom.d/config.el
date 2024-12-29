@@ -495,22 +495,22 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-use-sub-superscripts nil)
   (setq org-export-with-sub-superscripts nil)
 
-
   (defun my/get-title-or-filename (buffer file)
-    "Get the Org file #+TITLE property or use the filename if title is nil."
-    (with-current-buffer buffer
-      (or (org-element-map (org-element-parse-buffer 'element) 'keyword
-            (lambda (kw)
-              (when (string= "TITLE" (org-element-property :key kw))
-                (org-element-property :value kw)))
-            nil t)
-        (file-name-nondirectory file))))
+   "Get the Org file #+TITLE property or use the filename if title is nil."
+   (with-current-buffer buffer
+     (or (org-element-map (org-element-parse-buffer 'element) 'keyword
+           (lambda (kw)
+             (when (string= "TITLE" (org-element-property :key kw))
+               (org-element-property :value kw)))
+           nil t)
+       (file-name-nondirectory file))))
 
   (defun my/collect-next-tasks-from-agenda-files ()
     "Collect NEXT tasks, today's tasks, and overdue incomplete tasks from `org-agenda-files`."
     (interactive)
     (let (tasks
-           (today (format-time-string "%Y-%m-%d")))
+           (today (format-time-string "%Y-%m-%d"))
+           (current-dir (file-name-directory (buffer-file-name))))
       (dolist (file (org-agenda-files))
         (let ((buffer (find-file-noselect file)))
           (with-current-buffer buffer
@@ -587,6 +587,7 @@ Refer to `org-agenda-prefix-format' for more information."
                 (task-category (nth 3 task))
                 (task-type (nth 4 task))
                 (todo-keyword (nth 5 task))
+                (relative-path (file-relative-name task-file current-dir))
                 ;; Check if the title contains a link by looking for [[ pattern
                 (contains-link (string-match-p "\\[\\[" task-title)))
           (insert 
@@ -595,11 +596,12 @@ Refer to `org-agenda-prefix-format' for more information."
               (if contains-link
                 task-title
                 (format "[[file:%s::*%s][%s]]"
-                  task-file
+                  relative-path
                   task-title
                   task-title))
               task-type
               task-category))))))
+
   
   (defun my/org-bullet-to-heading-region (begin end)
     "Convert bullet points to headings in the selected region.
