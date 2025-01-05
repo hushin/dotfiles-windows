@@ -238,7 +238,7 @@
       ((string= property "Type")
         '("Book" "Web" "Anime" "Game" "Podcast" "Video" "Movie"))
       ((string= property "Rating")
-        '("★★★★★" "★★★★" "★★★" "★★" "★"))
+        '("*" "**" "***" "****" "*****"))
       ((string= property "Canceled")
         '("true" ""))
       ))
@@ -874,13 +874,19 @@ Also reduces indentation of nested bullet points by 2 spaces."
       `(("w" "weekly review" plain
           "* Review
 レビュー日 <%<%Y-%m-%d %a>>
+** 今週振り返り
+# 日記を読み返して振り返る
+*** Good
+*** Problem
+*** 来週達成したいこと
 ** 明確にする
 *** 把握する
 Inboxに収集する
 - [ ] Keep memo
 - [ ] 紙の書類
 - [ ] コミュニケーションツール
-  - [ ] メール
+  - [ ] メール Inbox
+  - [ ] メール ads
   - [ ] LINE
   - [ ] チャットツール
 - [ ] カレンダーの予定を確認し、適切なアクションを登録する
@@ -891,26 +897,25 @@ Inboxに収集する
 - [ ] Inboxに入っている明らかになっていないものを仕分け、Inboxを空にする
   - すぐにできるものは実行
 *** アクションリストを見直す
+=C-c a a= でタスクを見る
 - 完了したアクションはDONEにする
 - 必要があればリマインダーをセットする
-- 連絡待ちリストの更新
+- WAITINGリストの更新
 - 参考資料などを適切な場所に保存
 *** 次に取るべき行動を考える
 - [ ] アクションを推進するためのタスクを定義して追加する
   - プロジェクトリストや行動できていない項目について、次に取るべき行動は何かを考える
+  - （たまに） M-x areas, projects で棚卸
+- [ ] Resonance Calendar =C-c c r= で読みたい本や映画の予定を立てる
 ** 整理する
 - [ ] プロジェクトリストの更新
   - 長期的なゴールやビジョンに沿ったアクションを見直す
   - プロジェクトリストを見返し、目標や結果の状態を一つ一つ評価する
   - 各項目について少なくとも1つの次の取るべき行動があることを確認する
 - [ ] いつかやるリストの更新
+  - [ ] =C-c n f= cancel で 中断中のプロジェクトを見返す 
 ** 閉じる
 - [ ] org-agenda タスクをアーカイブする
-** 今週振り返り
-*** Good
-*** Problem
-*** Try
-** 来週達成したいこと
 "
           :if-new (file+head ,file-path ,(format "#+title: %s\n" title))
           :immediate-finish t
