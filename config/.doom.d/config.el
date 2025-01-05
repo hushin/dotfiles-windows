@@ -510,6 +510,7 @@ Refer to `org-agenda-prefix-format' for more information."
        (with-current-buffer buffer
          (save-excursion
            (goto-char pos)
+           (org-back-to-heading t)
            (let ((id (org-id-get)))
              (unless id
                (setq id (org-id-get-create))
