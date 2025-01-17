@@ -483,11 +483,9 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-startup-with-inline-images t)
 
   (setq org-M-RET-may-split-line t)
-  ;; FIXME 動いていない
   (when (winp)
-    (setq org-download-screenshot-method "magick convert clipboard: %s")
+    (setq org-download-screenshot-method "powershell -c Add-Type -AssemblyName System.Windows.Forms;$image = [Windows.Forms.Clipboard]::GetImage();$image.Save('%s', [System.Drawing.Imaging.ImageFormat]::Png)")
     )
-
   ;; export周りの設定
   (setq org-export-with-toc nil)
   (setq org-export-with-section-numbers nil)
@@ -735,7 +733,18 @@ Also reduces indentation of nested bullet points by 2 spaces."
 * 今日の目標
 
 * 思い+タスク
+# - 理想の制御：理想の今日のイメージをクリアにする
+#   - 1. フリーライティングする
+#     - 理想の一日のイメージを作る
+#     - カレンダーをチェックして外せない用事をチェック
+#     - 思いついたことを文章として書く
+#   - 2. 仮アウトラインを作る
+#   - 3. 仮サマリーを作る
+
+
 ** TODO 日記を書く
+** TODO エントリー消化
+** TODO LINEやりとり
 
 * できれば
 "))
