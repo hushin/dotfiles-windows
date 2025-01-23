@@ -483,9 +483,6 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-startup-with-inline-images t)
 
   (setq org-M-RET-may-split-line t)
-  (when (winp)
-    (setq org-download-screenshot-method "powershell -c Add-Type -AssemblyName System.Windows.Forms;$image = [Windows.Forms.Clipboard]::GetImage();$image.Save('%s', [System.Drawing.Imaging.ImageFormat]::Png)")
-    )
   ;; export周りの設定
   (setq org-export-with-toc nil)
   (setq org-export-with-section-numbers nil)
@@ -744,7 +741,6 @@ Also reduces indentation of nested bullet points by 2 spaces."
 
 ** TODO 日記を書く
 ** TODO エントリー消化
-** TODO LINEやりとり
 
 * できれば
 "))
@@ -1047,6 +1043,12 @@ DIR is the directory name for display purposes."
                 )
         :templates org-roam-capture-ref-templates))
     nil)
+  )
+
+(after! org-download
+  (when (winp)
+    (setq org-download-screenshot-method "powershell -c Add-Type -AssemblyName System.Windows.Forms;$image = [Windows.Forms.Clipboard]::GetImage();$image.Save('%s', [System.Drawing.Imaging.ImageFormat]::Png)")
+    )
   )
 
 (use-package! org-super-agenda
