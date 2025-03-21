@@ -490,116 +490,132 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-use-sub-superscripts nil)
   (setq org-export-with-sub-superscripts nil)
 
-  (defun my/get-title-or-filename (buffer file)
-   "Get the Org file #+TITLE property or use the filename if title is nil."
-   (with-current-buffer buffer
-     (or (org-element-map (org-element-parse-buffer 'element) 'keyword
-           (lambda (kw)
-             (when (string= "TITLE" (org-element-property :key kw))
-               (org-element-property :value kw)))
-           nil t)
-       (file-name-nondirectory file))))
+  (defun my/get-task-type (deadline scheduled todo-keyword)
+    "タスクのタイプを決定する。
+DEADLINE - 期限日付
+SCHEDULED - 予定日付
+TODO-KEYWORD - TODOキーワード"
+    (cond
+      ((string= todo-keyword "NEXT") "NEXT")
+      (deadline
+        (let* ((today (org-today))
+                (diff (- deadline today)))
+          (format "DL(%+d)" diff)))
+      (scheduled
+        (let* ((today (org-today))
+                (diff (- scheduled today)))
+          (format "SC(%+d)" diff)))
+      (t "")))
 
-  (defun my/ensure-heading-id (buffer pos)
-       "Ensure the heading at POS has an ID property. Return the ID."
-       (with-current-buffer buffer
-         (save-excursion
-           (goto-char pos)
-           (org-back-to-heading t)
-           (let ((id (org-id-get)))
-             (unless id
-               (setq id (org-id-get-create))
-               (save-buffer))
-             id))))
+  (defun my/ensure-org-id (pom)
+    "ポイントPOMにorg-idがなければ作成し、IDを返す"
+    (or (org-id-get pom)
+      (org-id-get-create pom)))
 
-  (defun my/collect-next-tasks-from-agenda-files ()
-         "Collect NEXT tasks, today's tasks, and overdue incomplete tasks from `org-agenda-files`."
-         (interactive)
-         (let (tasks
-                (today (format-time-string "%Y-%m-%d")))
-           (dolist (file (org-agenda-files))
-             (let ((buffer (find-file-noselect file)))
-               (with-current-buffer buffer
-                 (org-with-wide-buffer
-                   (let ((title-or-filename (my/get-title-or-filename buffer file))
-                          (parsed-buffer (org-element-parse-buffer 'headline)))
-                     (org-element-map parsed-buffer 'headline
-                       (lambda (headline)
-                         (let* ((todo-keyword (org-element-property :todo-keyword headline))
-                                 (title (org-element-property :raw-value headline))
-                                 (begin (org-element-property :begin headline))
-                                 (deadline (org-element-property :deadline headline))
-                                 (scheduled (org-element-property :scheduled headline))
-                                 (is-next (and todo-keyword (string= todo-keyword "NEXT")))
-                                 (is-not-done (and todo-keyword 
-                                                (not (or (string= todo-keyword "DONE") 
-                                                       (string= todo-keyword "CANCELED")))))
-                                 (deadline-date (when deadline 
-                                                  (format-time-string "%Y-%m-%d" 
-                                                    (org-timestamp-to-time deadline))))
-                                 (scheduled-date (when scheduled 
-                                                   (format-time-string "%Y-%m-%d" 
-                                                     (org-timestamp-to-time scheduled))))
-                                 (is-overdue (or 
-                                               (and deadline-date (string< deadline-date today))
-                                               (and scheduled-date (string< scheduled-date today))))
-                                 (is-today (or
-                                             (and deadline-date (string= deadline-date today))
-                                             (and scheduled-date (string= scheduled-date today)))))
-                           ;; Collect if it's NEXT, today's task, or overdue
-                           (when (or is-next
-                                   (and is-not-done (or is-today is-overdue)))
-                             (push (list 
-                                     title 
-                                     begin 
-                                     title-or-filename
-                                     (cond
-                                       (is-next "NEXT")
-                                       ((and deadline-date is-overdue) (format "期限超過 (%s)" deadline-date))
-                                       ((and scheduled-date is-overdue) (format "予定超過 (%s)" scheduled-date))
-                                       ((and deadline-date is-today) "今日期限")
-                                       ((and scheduled-date is-today) "今日予定"))
-                                     todo-keyword
-                                     buffer)
-                               tasks))))))))))
-           
-           ;; Sort tasks by priority: NEXT -> Today's tasks -> Overdue tasks
-           (setq tasks (sort tasks
-                         (lambda (a b)
-                           (let ((a-type (nth 3 a))
-                                  (b-type (nth 3 b)))
-                             (cond
-                               ((string= a-type "NEXT")
-                                 (if (string= b-type "NEXT")
-                                   (string< (car a) (car b))
-                                   t))
-                               ((or (string= a-type "今日期限") (string= a-type "今日予定"))
-                                 (if (string= b-type "NEXT")
-                                   nil
-                                   (if (or (string= b-type "今日期限") (string= b-type "今日予定"))
-                                     (string< (car a) (car b))
-                                     t)))
-                               (t (if (or (string= b-type "NEXT") 
-                                        (string= b-type "今日期限")
-                                        (string= b-type "今日予定"))
-                                    nil
-                                    (string< (car a) (car b)))))))))
-           
-           ;; Insert the collected tasks at point
-           (dolist (task tasks)
-             (let* ((task-title (nth 0 task))
-                     (task-pos   (nth 1 task))
-                     (task-category (nth 2 task))
-                     (task-type (nth 3 task))
-                     (todo-keyword (nth 4 task))
-                     (task-buffer (nth 5 task))
-                     (heading-id (my/ensure-heading-id task-buffer task-pos)))
-               (insert 
-                 (format "** TODO %s %s : %s (%s)\n"
-                   (format "[[id:%s][]]" heading-id)
-                   task-title
-                   task-category
-                   task-type))))))
+  (defun my/format-task-link (id heading type file-title)
+    "タスクへのリンクを整形する"
+    (format "** TODO [[id:%s][%s]] %s : %s (%s)"
+      id
+      ""
+      heading
+      file-title
+      type))
+
+  (defun my/collect-next-tasks-from-agenda-files (&optional days)
+    "org-agenda-filesから条件に合うタスクを収集し、現在のバッファにリンクとして挿入する。
+収集条件:
+- todo-keywordがNEXT
+- DUNEかCANCELED以外で、以下の条件のいずれか
+  - 期限が今日からX日後まで
+  - 予定が今日以前
+Optional argument DAYS は期限のX日数（デフォルトは5）"
+    (interactive "P")
+    (let* ((days (or days 5))
+            (tasks '())
+            (today (org-today))
+            (future-limit (+ today days)))
+
+      ;; ファイルごとに処理
+      (dolist (file (org-agenda-files))
+        (let ((file-buffer (find-file-noselect file t))
+               (file-title nil))
+          (with-current-buffer file-buffer
+            (setq file-title (my/get-title-or-filename file-buffer file))
+            (org-with-wide-buffer
+              (goto-char (point-min))
+              (while (re-search-forward org-heading-regexp nil t)
+                (let* ((element (org-element-at-point))
+                        (todo-keyword (org-element-property :todo-keyword element))
+                        (deadline (org-element-property :deadline element))
+                        (scheduled (org-element-property :scheduled element))
+                        (heading (org-element-property :title element))
+                        (deadline-date (when deadline
+                                         (time-to-days
+                                           (org-time-string-to-time
+                                             (org-element-property :raw-value deadline)))))
+                        (scheduled-date (when scheduled
+                                          (time-to-days
+                                            (org-time-string-to-time
+                                              (org-element-property :raw-value scheduled))))))
+                  
+                  ;; 条件判定
+                  (when (or 
+                          ;; 条件1: todo-keywordがNEXT
+                          (and todo-keyword (string= todo-keyword "NEXT"))
+                          ;; 条件2: DONE/CANCELED以外で、期限がX日以内または予定が今日以前
+                          (and todo-keyword
+                            (not (or (string= todo-keyword "DONE")
+                                   (string= todo-keyword "CANCELED")))
+                            (or (and deadline-date (<= deadline-date future-limit))
+                              (and scheduled-date (<= scheduled-date today)))))
+                    
+                    ;; タスクの情報を収集
+                    (let* ((id (my/ensure-org-id element))
+                            (type (my/get-task-type deadline-date scheduled-date todo-keyword))
+                            (task-data (list
+                                         :link (my/format-task-link id heading type file-title)
+                                         :is-next (and todo-keyword (string= todo-keyword "NEXT"))
+                                         :scheduled-date scheduled-date
+                                         :deadline-date deadline-date
+                                         :has-scheduled (not (null scheduled-date))
+                                         :has-deadline (not (null deadline-date))))) 
+                      (push task-data tasks)))))))))
+      
+      ;; タスクの並び替え (NEXT→予定→期限の順、日付は過去から未来へ)
+      (setq tasks
+        (sort tasks
+          (lambda (a b)
+            (cond
+              ;; NEXTを最優先
+              ((and (plist-get a :is-next) (not (plist-get b :is-next))) t)
+              ((and (not (plist-get a :is-next)) (plist-get b :is-next)) nil)
+              
+              ;; 次に、予定(scheduled)があるかどうかで分類
+              ((and (plist-get a :has-scheduled) (not (plist-get b :has-scheduled))) t)
+              ((and (not (plist-get a :has-scheduled)) (plist-get b :has-scheduled)) nil)
+              
+              ;; 両方予定があれば日付で比較（過去順）
+              ((and (plist-get a :has-scheduled) (plist-get b :has-scheduled))
+                (< (plist-get a :scheduled-date) (plist-get b :scheduled-date)))
+              
+              ;; 次に、期限(deadline)があるかどうかで分類
+              ((and (plist-get a :has-deadline) (not (plist-get b :has-deadline))) t)
+              ((and (not (plist-get a :has-deadline)) (plist-get b :has-deadline)) nil)
+              
+              ;; 両方期限があれば日付で比較（過去順）
+              ((and (plist-get a :has-deadline) (plist-get b :has-deadline))
+                (< (plist-get a :deadline-date) (plist-get b :deadline-date)))
+              
+              ;; それ以外の場合
+              (t nil)))))
+      
+      ;; 収集したタスクを現在のバッファに挿入
+      (when tasks
+        (insert (mapconcat (lambda (task) (plist-get task :link)) tasks "\n"))
+        (insert "\n"))
+      
+      ;; メッセージ表示
+      (message "%d個のタスクを挿入しました" (length tasks))))
   
   (defun my/org-bullet-to-heading-region (begin end)
     "Convert bullet points to headings in the selected region.
