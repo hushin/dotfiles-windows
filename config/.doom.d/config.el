@@ -500,11 +500,11 @@ TODO-KEYWORD - TODOキーワード"
       (deadline
         (let* ((today (org-today))
                 (diff (- deadline today)))
-          (format "DL(%+d)" diff)))
+          (format "期限 %+d日" diff)))
       (scheduled
         (let* ((today (org-today))
                 (diff (- scheduled today)))
-          (format "SC(%+d)" diff)))
+          (format "予定 %+d日" diff)))
       (t "")))
 
   (defun my/ensure-org-id (pom)
