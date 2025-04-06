@@ -490,6 +490,15 @@ Refer to `org-agenda-prefix-format' for more information."
   (setq org-use-sub-superscripts nil)
   (setq org-export-with-sub-superscripts nil)
 
+  (defun my/get-title-or-filename (buffer file)
+   "Get the Org file #+TITLE property or use the filename if title is nil."
+   (with-current-buffer buffer
+     (or (org-element-map (org-element-parse-buffer 'element) 'keyword
+           (lambda (kw)
+             (when (string= "TITLE" (org-element-property :key kw))
+               (org-element-property :value kw)))
+           nil t)
+       (file-name-nondirectory file))))
   (defun my/get-task-type (deadline scheduled todo-keyword)
     "タスクのタイプを決定する。
 DEADLINE - 期限日付
